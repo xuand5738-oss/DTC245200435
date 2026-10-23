@@ -31,11 +31,16 @@ docker compose up -d --build
 bash scripts/check-app.sh
 ```
 
-Môi trường hiện tại đã có `.env` sinh mật khẩu ngẫu nhiên và không đưa vào Git. Không ghi đè tệp này. Không đổi mật khẩu trong `.env` khi DB đã khởi tạo mà chưa đổi mật khẩu tài khoản tương ứng trong MySQL.
+Môi trường hiện tại đã có `.env` sinh mật khẩu ngẫu nhiên và không đưa vào Git. Không ghi đè tệp này. Với môi trường mới, điền đủ MYSQL_EXPORTER_PASSWORD (chỉ chữ và số) và GRAFANA_PASSWORD; script db/init/02-permissions.sh tự cấp quyền khi khởi tạo DB lần đầu. Với DB đã có, sau khi cập nhật biến môi trường chạy `docker compose up -d --wait db`, rồi `docker compose exec db bash /docker-entrypoint-initdb.d/02-permissions.sh`. Không đổi mật khẩu trong `.env` khi DB đã khởi tạo mà chưa đổi mật khẩu tài khoản tương ứng trong MySQL.
 
 - Website: http://localhost:8280
 - phpMyAdmin: http://localhost:8281 — máy chủ `db`, tài khoản là `MYSQL_USER` và mật khẩu `MYSQL_PASSWORD` trong `.env`. Chưa cấu hình tự đăng nhập. Không chụp mật khẩu vào báo cáo.
 - MySQL không công bố cổng ra Windows. Dữ liệu nằm trong volume `topic11_mysql_data`, độc lập với hệ thống cũ.
+- Website cổng 8280 hiện đi qua Nginx; app không công bố cổng trực tiếp. Chọn security headers theo phương án đề cho phép, chưa cấu hình HTTPS.
+- Prometheus: http://localhost:8290/targets — bốn targets phải UP.
+- Grafana: http://localhost:8300/d/topic11 — user `admin`, mật khẩu `GRAFANA_PASSWORD` trong `.env`. Dashboard tám panel container/Nginx/MySQL tự nạp từ Git.
+- Grafana Explore: http://localhost:8300/explore — chọn datasource Loki, query theo `docs/logql.md`.
+- Loki API chỉ trên localhost:8310. Promtail đọc file Nginx qua volume, không đọc Docker socket.
 - Dừng bằng `docker compose stop`; chạy lại bằng `docker compose up -d`. Không dùng `docker compose down -v` vì sẽ xóa dữ liệu.
 
 Database mới khởi tạo chưa có dữ liệu. Để tạo lại demo đã được cho phép trên môi trường hiện tại:
@@ -45,6 +50,16 @@ docker compose exec -T app node < scripts/demo.js
 ```
 
 Script tạo suất chiếu và ghế còn thiếu, đặt vé A1 nếu chưa có và xác nhận thanh toán giả lập. Chạy lại không tạo thêm vé A1. Script dừng nếu ghế này thuộc người đặt khác. Dữ liệu demo là giả định, không lấy từ nguồn ngoài. Xem `docs/du-lieu-can-cung-cap.md`.
+
+## Kiểm tra và minh chứng
+
+```bash
+docker compose exec -T app node < scripts/verify-hardening.js
+```
+
+Trên Windows, dùng Python có sẵn chạy `python scripts/verify-stack.py` (không cần cài thư viện bên ngoài). Script kiểm tra headers, DB health, metrics, dashboard và ba LogQL. Đợi Prometheus scrape ít nhất hai lần và Promtail gửi log đầu tiên trước khi kiểm tra. Báo cáo và hướng dẫn ảnh nằm trong `docs/bao-cao-thuc-hanh.md` và `docs/huong-dan-demo.md`.
+
+Giới hạn: bản thực hành chưa có tài khoản người dùng website, chưa HTTPS và chưa kiểm thử tải; chỉ dùng localhost. cAdvisor có privileged để lấy metrics, không áp dụng cấu hình này như một mẫu production.
 
 Kiểm tra môi trường từ PowerShell:
 
