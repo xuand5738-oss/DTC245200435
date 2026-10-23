@@ -17,7 +17,17 @@ Dữ liệu nghiệp vụ do sinh viên cung cấp. Môi trường thực hành 
 
 ## 2. Chuẩn bị môi trường
 
-[Bổ sung phiên bản Windows, WSL, bản phân phối Linux, Docker và Compose sau khi kiểm tra.]
+Môi trường đã kiểm tra: Ubuntu 24.04.5 LTS trên WSL 2; Docker Engine 29.1.3; Docker Compose 2.40.3+ds1-0ubuntu1~24.04.1. Lệnh docker version trả về cả Client và Server, xác nhận Docker Engine có phản hồi. Phiên Linux hiện chạy bằng tài khoản root. Chưa triển khai container của đề tài.
+
+Để tự kiểm tra và chụp ảnh, mở terminal Ubuntu-24.04, chạy lần lượt:
+
+```bash
+cat /etc/os-release
+docker version
+docker compose version
+```
+
+Trên PowerShell, dùng `wsl --list --verbose` để thấy bản Ubuntu sử dụng WSL 2. Ảnh cần hiện rõ lệnh và kết quả; không để mật khẩu xuất hiện trong ảnh.
 
 **Ảnh cần tự chụp sau khi môi trường hoạt động:** kết quả kiểm tra WSL, Docker và Compose. Chưa cần chụp ở nhiệm vụ lập khung báo cáo.
 

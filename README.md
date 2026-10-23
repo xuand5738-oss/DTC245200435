@@ -10,7 +10,14 @@ Chỉ sử dụng tài liệu học phần đã cung cấp. Dữ liệu phim/s�
 
 ## Trạng thái
 
-Đã lập phạm vi và khung báo cáo. Chưa triển khai ứng dụng; chưa có lệnh khởi chạy hệ thống để xác nhận.
+Đã lập phạm vi và khung báo cáo, kiểm tra Ubuntu 24.04.5 trên WSL 2, Docker Engine 29.1.3 và Compose 2.40.3 hoạt động. Chưa triển khai ứng dụng; chưa có lệnh khởi chạy hệ thống để xác nhận.
+
+Kiểm tra môi trường từ PowerShell:
+
+```powershell
+wsl --list --verbose
+wsl -d Ubuntu-24.04 -- bash -lc 'cat /etc/os-release; docker version; docker compose version'
+```
 
 ## Tài liệu dự án
 

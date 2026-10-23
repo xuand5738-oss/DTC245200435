@@ -16,8 +16,8 @@ Báo cáo bắt buộc tối thiểu 10 trang, có bìa thông tin sinh viên v�
 
 ## Các nhiệm vụ
 
-1. Phạm vi, tiêu chí và khung báo cáo.
-2. Kiểm tra WSL và Docker; ghi hướng dẫn môi trường thực tế.
+1. Phạm vi, tiêu chí và khung báo cáo — đã hoàn thành.
+2. Kiểm tra WSL và Docker; ghi hướng dẫn môi trường thực tế — đã xác nhận WSL 2, Ubuntu 24.04.5, Docker Engine và Compose hoạt động; sinh viên chưa chụp ảnh minh chứng.
 3. Ứng dụng, MySQL và phpMyAdmin; nhận dữ liệu nghiệp vụ từ sinh viên.
 4. Nginx reverse proxy và HTTPS/security headers.
 5. Prometheus, exporter và Grafana cho đủ ba tầng giám sát.
