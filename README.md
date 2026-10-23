@@ -1,94 +1,163 @@
 # Đề 11 — Hệ thống đặt vé xem phim / sự kiện
 
-Môn học: Triển khai và Quản trị Hệ thống Phần mềm.
+Môn: Triển khai và Quản trị Hệ thống Phần mềm.
 
-## Phạm vi
+## Phạm vi và trạng thái
 
-Website quản lý suất chiếu, ghế và đặt vé, thanh toán giả lập. Stack dự kiến: Express, MySQL, phpMyAdmin, Nginx, Prometheus, Grafana, Loki và Promtail. Tất cả dịch vụ chạy bằng Docker Compose trên WSL theo lựa chọn của sinh viên.
+Đã triển khai website Express + MySQL + phpMyAdmin, Nginx reverse proxy, Prometheus + Grafana, Loki + Promtail và các biện pháp hardening. Toàn bộ 11 dịch vụ chạy bằng Docker Compose trong Ubuntu WSL 2. Nginx có security headers theo phương án đề bài cho phép; chưa HTTPS.
 
-Chỉ sử dụng tài liệu học phần đã cung cấp. Sinh viên đã cho phép tạo demo: 1 suất chiếu giả định, 8 ghế và 1 vé thanh toán giả lập. Không tích hợp thanh toán thật.
+Website có phim, rạp/phòng, sơ đồ ghế, lịch chiếu, đặt vé, ưu đãi/bắp nước, thanh toán giả lập, QR/check-in, đổi/hủy, thành viên, CMS, phân quyền và báo cáo CSV. Dữ liệu lấy từ MySQL; giao diện dùng phông chữ tiếng Việt, VND và múi giờ Việt Nam. Prometheus có 4 target, Grafana có dashboard 8 panel cho container/web/DB; có 3 truy vấn LogQL trong tài liệu.
 
-## Trạng thái
+Thanh toán, hoàn tiền và cấu hình cổng thanh toán đều là giả lập nội bộ, không thu tiền thật. Dữ liệu demo hư cấu được tạo theo yêu cầu của sinh viên; không lấy phim/ảnh từ nguồn ngoài.
 
-Đã chạy ứng dụng Express + MySQL + phpMyAdmin, kiểm chứng đặt vé demo, chống trùng ghế, thanh toán giả lập và đăng nhập phpMyAdmin. Các thành phần Nginx, giám sát và log sẽ được bổ sung ở những nhiệm vụ tiếp theo.
+## Cấu hình môi trường mới
 
-## Chạy ứng dụng trong Ubuntu WSL
+Cần Ubuntu WSL 2, Docker Engine, Docker Compose, Python 3 và kết nối mạng để tải image lần đầu. Các lệnh Bash dưới đây chạy trong Ubuntu tại thư mục dự án:
 
-Trên máy hiện tại, cần giữ một phiên Ubuntu mở để tránh WSL tự dừng sau khi lệnh kết thúc. Từ PowerShell chạy:
+```bash
+cd /mnt/d/DTC245200435
+```
+
+Chỉ khi chưa có `.env`, sao chép mẫu:
+
+```bash
+cp .env.example .env
+```
+
+Điền cấu hình trước khi khởi động:
+
+| Biến | Mục đích |
+|---|---|
+| MYSQL_DATABASE, MYSQL_USER | Tên DB và tài khoản ứng dụng |
+| MYSQL_PASSWORD | Mật khẩu DB ứng dụng |
+| MYSQL_ROOT_PASSWORD | Mật khẩu quản trị MySQL |
+| MYSQL_EXPORTER_PASSWORD | Mật khẩu exporter, chỉ dùng chữ và số |
+| GRAFANA_PASSWORD | Mật khẩu tài khoản admin của Grafana |
+| WEB_ADMIN_PASSWORD, WEB_CUSTOMER_PASSWORD | Tùy chọn; script thiết lập web tự sinh nếu chưa có |
+
+Thay mọi giá trị `REPLACE_WITH_...` bằng mật khẩu mạnh, khác nhau. Máy hiện tại đã có `.env`; không sao chép đè hoặc đưa tệp này vào Git. Không đổi mật khẩu trong `.env` của DB đã có dữ liệu mà chưa đổi mật khẩu tài khoản tương ứng trong MySQL.
+
+## Triển khai lần đầu
+
+```bash
+docker compose config --quiet
+docker compose up -d --build --wait
+bash scripts/apply-auth.sh
+bash scripts/check-app.sh
+```
+
+DB mới tự chạy các tệp trong `db/init/` để tạo schema, quyền và migration. `apply-auth.sh` tạo tài khoản web ban đầu, tự sinh mật khẩu web còn thiếu vào `.env` cục bộ, không in mật khẩu. Mật khẩu web được băm scrypt; script không đặt lại mật khẩu tài khoản đã tồn tại. DB nghiệp vụ chưa có phim/rạp/vé cho đến khi nhập hoặc chủ động tạo demo.
+
+## Khởi động lại và nâng cấp
+
+Trên máy hiện tại, từ PowerShell:
 
 ```powershell
 cd D:\DTC245200435
 powershell -ExecutionPolicy Bypass -File .\start-wsl.ps1
 ```
 
-Giữ cửa sổ này mở trong lúc dùng website. Script chỉ khởi động stack và mở phiên Bash, không thay đổi dữ liệu. Nếu đóng phiên cuối cùng rồi website không truy cập được, chạy lại script. Việc này khác với `docker compose up -d`: cờ `-d` giữ container chạy nền nhưng không giữ phiên WSL hoạt động trên máy hiện tại.
+Giữ phiên Ubuntu này mở khi sử dụng website. Trên máy thực hành, WSL có thể dừng sau khi phiên cuối kết thúc; `docker compose up -d` không thay thế việc giữ phiên WSL hoạt động. Script trên chỉ khởi động stack và mở Bash, không tạo demo.
+
+Sau khi cập nhật mã nguồn, trong Ubuntu:
 
 ```bash
-cd /mnt/d/DTC245200435
-cp .env.example .env  # chỉ làm nếu chưa có .env
-# Sửa hai mật khẩu trong .env thành hai mật khẩu mạnh khác nhau trước khi chạy.
-docker compose up -d --build
-bash scripts/check-app.sh
+docker compose up -d --build --wait
+docker compose exec -T nginx nginx -s reload
 ```
 
-Môi trường hiện tại đã có `.env` sinh mật khẩu ngẫu nhiên và không đưa vào Git. Không ghi đè tệp này. Với môi trường mới, điền đủ MYSQL_EXPORTER_PASSWORD (chỉ chữ và số) và GRAFANA_PASSWORD; script db/init/02-permissions.sh tự cấp quyền khi khởi tạo DB lần đầu. Với DB đã có, sau khi cập nhật biến môi trường chạy `docker compose up -d --wait db`, rồi `docker compose exec db bash /docker-entrypoint-initdb.d/02-permissions.sh`. Không đổi mật khẩu trong `.env` khi DB đã khởi tạo mà chưa đổi mật khẩu tài khoản tương ứng trong MySQL.
+Reload Nginx để cập nhật upstream khi container app được tạo lại. Với DB từ phiên bản chưa có tài khoản web, chạy `bash scripts/apply-auth.sh`; với DB chưa có nghiệp vụ rạp chiếu/migration liên kết phim, chạy `bash scripts/apply-cinema.sh`. Script nâng cấp rạp chiếu tạo bản sao lưu cục bộ trong `tmp/` trước khi áp dụng schema. Không chạy seed mỗi lần mở website.
 
-- Website: http://localhost:8280
-- phpMyAdmin: http://localhost:8281 — máy chủ `db`, tài khoản là `MYSQL_USER` và mật khẩu `MYSQL_PASSWORD` trong `.env`. Chưa cấu hình tự đăng nhập. Không chụp mật khẩu vào báo cáo.
-- MySQL không công bố cổng ra Windows. Dữ liệu nằm trong volume `topic11_mysql_data`, độc lập với hệ thống cũ.
-- Website cổng 8280 hiện đi qua Nginx; app không công bố cổng trực tiếp. Chọn security headers theo phương án đề cho phép, chưa cấu hình HTTPS.
-- Prometheus: http://localhost:8290/targets — bốn targets phải UP.
-- Grafana: http://localhost:8300/d/topic11 — user `admin`, mật khẩu `GRAFANA_PASSWORD` trong `.env`. Dashboard tám panel container/Nginx/MySQL tự nạp từ Git.
-- Grafana Explore: http://localhost:8300/explore — chọn datasource Loki, query theo `docs/logql.md`.
-- Loki API chỉ trên localhost:8310. Promtail đọc file Nginx qua volume, không đọc Docker socket.
-- Dừng bằng `docker compose stop`; chạy lại bằng `docker compose up -d`. Không dùng `docker compose down -v` vì sẽ xóa dữ liệu.
+Dừng bằng `docker compose stop`, chạy lại bằng `docker compose up -d`. Không dùng `docker compose down -v` nếu cần giữ dữ liệu vì tùy chọn `-v` xóa volume.
 
-Database mới khởi tạo chưa có dữ liệu. Để tạo lại demo đã được cho phép trên môi trường hiện tại:
+## Địa chỉ và đăng nhập
+
+| Thành phần | Địa chỉ | Tài khoản / ghi chú |
+|---|---|---|
+| Website | http://127.0.0.1:8280 | Qua Nginx; đăng nhập tại /login |
+| Admin website | http://127.0.0.1:8280/admin | admin / WEB_ADMIN_PASSWORD trong .env |
+| Khách hàng | http://127.0.0.1:8280/login | khachhang / WEB_CUSTOMER_PASSWORD trong .env |
+| phpMyAdmin | http://127.0.0.1:8281 | Máy chủ db; MYSQL_USER / MYSQL_PASSWORD |
+| Prometheus | http://127.0.0.1:8290/targets | 4 target phải UP |
+| Grafana | http://127.0.0.1:8300/d/topic11 | admin / GRAFANA_PASSWORD |
+| Grafana Explore | http://127.0.0.1:8300/explore | Chọn datasource Loki |
+| Loki API | http://127.0.0.1:8310 | Chỉ công bố trên localhost |
+
+Tài khoản website, phpMyAdmin và Grafana là các hệ thống đăng nhập riêng. Không đưa mật khẩu vào ảnh minh chứng. App và MySQL không công bố cổng trực tiếp ra Windows. Dữ liệu MySQL nằm trong volume `topic11_mysql_data`; ảnh tải lên, giám sát và log có volume riêng. Promtail đọc file Nginx qua volume, không đọc Docker socket.
+
+## Phân quyền hiện tại
+
+- **Khách hàng:** đặt và thanh toán giả lập vé của mình, Vé của tôi, Thành viên, yêu cầu đổi/hủy và đổi quà.
+- **Admin tối cao:** quản trị hệ thống, xem và xử lý giao dịch; không được đặt vé, xác nhận thanh toán hay sử dụng trang vé/thành viên cá nhân.
+- **Quản lý rạp:** lịch chiếu, báo cáo và nhân viên thuộc rạp được phân công.
+- **Nhân viên soát vé:** check-in tại rạp được phân công.
+- **CSKH:** xem giao dịch, tạo và duyệt yêu cầu đổi/hủy theo quyền hỗ trợ.
+
+Admin tạo tài khoản và phân công rạp trong Tài khoản & RBAC. Phim → Lịch chiếu → Vé và Rạp → Phòng → Sơ đồ ghế → Lịch chiếu có liên kết lọc/chọn sẵn dữ liệu. Mọi quyền được kiểm tra ở server. Vé cũ chưa gắn khách hàng vẫn giữ cho admin quản lý. Chi tiết chức năng và giới hạn trong [tài liệu quản trị](docs/admin-mo-rong.md).
+
+## Tạo dữ liệu demo và thử đặt vé
+
+Chạy thủ công trong Ubuntu:
 
 ```bash
-docker compose exec -T app node < scripts/demo.js
+docker compose exec -T app node < scripts/seed-cinema-demo.js
 ```
 
-Script tạo suất chiếu và ghế còn thiếu, đặt vé A1 nếu chưa có và xác nhận thanh toán giả lập. Chạy lại không tạo thêm vé A1. Script dừng nếu ghế này thuộc người đặt khác. Dữ liệu demo là giả định, không lấy từ nguồn ngoài. Xem `docs/du-lieu-can-cung-cap.md`.
+Script thêm 3 phim (2 đang chiếu, 1 sắp chiếu), 1 rạp, 2 phòng với 48 ghế, 4 suất vào ngày kế tiếp lúc chạy lần đầu, 3 sản phẩm bắp nước, mã VE11DEMO, 1 hạng thành viên, 1 quà đổi điểm và 2 nội dung trang chủ. Script không tạo vé hoặc thanh toán. Dấu `demo_catalog_v1` ngăn thêm lại khi chạy lần nữa, bảo toàn các chỉnh sửa/xóa sau đó. Lịch và thời hạn voucher không tự gia hạn; admin cần cập nhật khi demo vào ngày khác. Poster/trailer để trống cho đến khi người dùng cung cấp nội dung được phép.
 
-## Đăng nhập và phân quyền website
+1. Đăng nhập **khachhang**, mở phim/suất đang bán và chọn ghế còn trống.
+2. Nhập thông tin người đặt, chọn đối tượng, voucher/bắp nước nếu cần; tạo vé rồi kiểm tra chi tiết tổng tiền.
+3. Xác nhận thanh toán giả lập. Vé có QR và xuất hiện trong **Vé của tôi**.
+4. Đăng nhập **admin**, mở **Giao dịch** để kiểm tra vé, xử lý đổi/hủy và xem báo cáo. Admin không đặt vé thay khách.
+5. Báo cáo mặc định theo **ngày thanh toán** giờ Việt Nam. Chọn **Ngày chiếu và lấp đầy** để xem sức chứa cộng qua từng suất; tổng lượt ghế không phải số ghế đã bán. CSV dùng cùng bộ lọc/chế độ.
 
-### Quản trị rạp chiếu mở rộng
-
-Trang `/admin` có menu Phim, Cụm rạp, Phòng/sơ đồ ghế, Suất chiếu, Giá, Giao dịch, Soát vé, Voucher, Hạng/Quà, Bắp nước, Thống kê/CSV, Tài khoản/RBAC và CMS. Xem `docs/admin-mo-rong.md` để biết chức năng thực tế, trình tự nhập và các giới hạn giả lập. Nâng cấp DB cũ bằng `bash scripts/apply-cinema.sh` trước khi dùng bản mới. Không tự sinh phim/rạp/ảnh để lấp đầy giao diện.
-
-Giao diện các trang dùng chung phông chữ hỗ trợ tiếng Việt, định dạng ngày giờ Việt Nam/VND và tài nguyên nội bộ. Số ghế, vé và trạng thái lấy từ MySQL, không thêm dữ liệu mẫu trong lần đổi giao diện. Xem `docs/giao-dien.md` để kiểm tra đồng bộ dữ liệu và các màn hình.
-
-Mở http://localhost:8280/login. Tài khoản `admin` quản lý toàn bộ vé và thêm suất chiếu; `khachhang` chỉ xem/đặt/thanh toán giả lập vé của mình. Mật khẩu tương ứng ở WEB_ADMIN_PASSWORD và WEB_CUSTOMER_PASSWORD trong `.env`, khác tài khoản phpMyAdmin/Grafana. Triển khai lần đầu hoặc nâng cấp DB đã có bằng `bash scripts/apply-auth.sh` trong WSL. Xem `docs/phan-quyen.md`.
-
-Vé demo cũ chưa có chủ tài khoản chỉ admin xem được; vé demo A2 được tạo để kiểm tra khách hàng. Mọi quyền được kiểm tra ở server, không dựa vào việc ẩn nút trên giao diện. Đăng nhập bằng username/password, mật khẩu băm scrypt, phiên lưu DB, cookie HttpOnly/SameSite và token CSRF.
-
-Kiểm tra phân quyền trên Windows: `python scripts/verify-auth.py`. Script dùng hai tài khoản demo và tạo tối đa một vé A2 nếu khách chưa có vé.
+`scripts/demo.js` là script lịch sử dùng phiên admin, không còn phù hợp với phân quyền hiện tại: yêu cầu đặt/thanh toán bị trả 403. Không dùng script này để tạo lại demo; dùng `seed-cinema-demo.js` và tài khoản khách hàng như trên. Các vé demo cũ vẫn giữ trong lịch sử.
 
 ## Kiểm tra kỹ thuật
 
+Chạy trong Ubuntu:
+
 ```bash
+bash scripts/check-app.sh
+python3 scripts/verify-stack.py
 docker compose exec -T app node < scripts/verify-hardening.js
 ```
 
-Trên Windows, dùng Python có sẵn chạy `python scripts/verify-stack.py` (không cần cài thư viện bên ngoài). Script kiểm tra headers, DB health, metrics, dashboard và ba LogQL. Đợi Prometheus scrape ít nhất hai lần và Promtail gửi log đầu tiên trước khi kiểm tra. Báo cáo và hướng dẫn ảnh nằm trong `docs/bao-cao-thuc-hanh.md` và `docs/huong-dan-demo.md`.
+`verify-stack.py` kiểm tra website, DB health, phpMyAdmin HTTP, headers, metrics, dashboard và 3 LogQL. Đợi Prometheus scrape và Promtail gửi log sau khi khởi động. `verify-hardening.js` kiểm tra UID khác root, DB không có ALL PRIVILEGES/GRANT OPTION và bị từ chối CREATE TABLE.
 
-Giới hạn: bản thực hành chưa HTTPS, chưa đăng ký tự do, chưa tích hợp thanh toán/hoàn tiền thật và chưa kiểm thử tải; chỉ dùng localhost. Cấu hình thanh toán mới là giả lập nội bộ. cAdvisor có privileged để lấy metrics, không áp dụng cấu hình này như một mẫu production.
+Kiểm thử nghiệp vụ trên DB tạm riêng:
 
-Kiểm tra môi trường từ PowerShell:
-
-```powershell
-wsl --list --verbose
-wsl -d Ubuntu-24.04 -- bash -lc 'cat /etc/os-release; docker version; docker compose version'
+```bash
+bash scripts/test-cinema.sh
 ```
 
-## Tài liệu dự án
+Bộ kiểm thử kiểm tra CRUD, lịch trùng, ghế, quyền theo rạp, giá/ưu đãi/bắp nước, thanh toán, QR/check-in, đổi/hủy, điểm thưởng, CMS và báo cáo CSV. Script tạo DB ngẫu nhiên và container `app-test` không công bố cổng, rồi dọn chúng; không tạo giao dịch trong DB chính. Cần Docker và cấu hình quyền quản trị DB sẵn trong Compose.
 
-- `docs/tieu-chi.md`: tiêu chí và bằng chứng cần kiểm tra.
-- `docs/bao-cao-thuc-hanh.md`: bản thảo báo cáo, cập nhật sau từng nhiệm vụ.
+Nếu chủ động muốn kiểm tra đăng nhập trên DB chính, chạy `python3 scripts/verify-auth.py`. Script dùng hai tài khoản demo và có thể tạo tối đa một vé A2 của lịch demo cũ khi khách chưa có vé; không dùng script này như lệnh khởi động hay seed cho DB mới.
 
-## Quy trình thực hiện
+## Hardening và giới hạn
 
-Hoàn thành và kiểm tra từng nhiệm vụ, sau đó commit và push lên GitHub. Các mốc triển khai Nginx, giám sát và log có commit riêng theo yêu cầu đề tài. Khi cần ảnh minh chứng, mở đúng trang hoặc kết quả để sinh viên tự chụp; không tự động chụp ảnh. Không ghi kết quả thành công khi chưa kiểm chứng.
+App chạy bằng USER node (UID 1000), filesystem read-only với volume ảnh riêng, bỏ capabilities và bật no-new-privileges. DB nằm trong mạng backend internal, tài khoản ứng dụng chỉ có SELECT/INSERT/UPDATE. Nginx có security headers; web dùng cookie HttpOnly/SameSite, CSRF và kiểm tra vai trò/chủ vé ở server. Bí mật nằm ngoài Git.
 
-Không đưa mật khẩu, khóa riêng hoặc dữ liệu bí mật vào Git. Các tệp trích xuất PDF trong `tmp/` chỉ phục vụ đọc tài liệu, không thuộc mã nguồn nộp bài.
+Bản thực hành chỉ dùng localhost, chưa HTTPS, chưa đăng ký tự do, chưa tích hợp thanh toán/hoàn tiền thật và chưa kiểm thử tải. cAdvisor dùng privileged để thu metrics là ngoại lệ giám sát của cấu hình thực hành, không áp dụng như mẫu production.
+
+## Các mốc commit theo đề bài
+
+| Mốc | Commit |
+|---|---|
+| Nginx reverse proxy và security headers | 201ea21 |
+| Prometheus, Grafana và exporter | ca5ed5a |
+| Loki, Promtail và LogQL | 3d26c86 |
+| Hardening và kiểm tra | 5cc6a49 |
+
+Các thay đổi tiếp theo được commit/push riêng. Tài khoản GitHub hiện tại là `xuand5738-oss`; sinh viên chọn giữ nguyên và tự xác nhận yêu cầu đặt tên theo MSSV với giảng viên.
+
+## Tài liệu và minh chứng
+
+- [Tiêu chí và phạm vi nộp bài](docs/tieu-chi.md).
+- [Chức năng quản trị và giới hạn giả lập](docs/admin-mo-rong.md).
+- [Phân quyền](docs/phan-quyen.md), [giao diện](docs/giao-dien.md).
+- [Truy vấn LogQL](docs/logql.md), [hướng dẫn demo và ảnh](docs/huong-dan-demo.md).
+- [Bản thảo báo cáo](docs/bao-cao-thuc-hanh.md), chưa phải bản nộp hoàn chỉnh: cần bổ sung bìa, ảnh và cập nhật theo hệ thống hiện tại.
+
+Sinh viên đã yêu cầu không tiếp tục phần báo cáo. Yêu cầu gốc về tối thiểu 10 trang, ảnh minh chứng và trình bày vẫn cần sinh viên hoàn tất hoặc xác nhận với giảng viên. Khi cần minh chứng, mở đúng màn hình để sinh viên tự chụp; không tự động chụp ảnh. Tệp tạm, trích xuất PDF, bản sao lưu và `.env` không thuộc mã nguồn nộp bài.
