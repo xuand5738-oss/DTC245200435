@@ -32,6 +32,8 @@ Khách gửi yêu cầu từ chi tiết vé hoặc CSKH tạo yêu cầu trong G
 
 Xóa dữ liệu quản trị là xóa mềm để giữ lịch sử. Ẩn hoặc xóa phim ngừng mở bán mới nhưng không tự giả định phải hủy các vé đã bán; quản trị viên dùng thao tác hủy suất nếu thực sự cần hủy/hoàn.
 
+Trong Suất chiếu có nút **Xóa khỏi danh sách**, dùng được cả cho dữ liệu demo cũ chưa gắn phim/phòng và suất đã hủy. Nếu còn vé hiệu lực, hệ thống từ chối xóa và yêu cầu hủy/hoàn trước. Quản lý rạp không xóa được suất thuộc rạp khác. Xóa khỏi danh sách cập nhật cờ deleted, không xóa lịch sử vật lý.
+
 ## Nâng cấp môi trường cũ
 
 Trong WSL, tại /mnt/d/DTC245200435:

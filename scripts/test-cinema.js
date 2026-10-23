@@ -51,7 +51,7 @@ class Client{
   await customer.save('/bookings',{showtime_id:sa,seat_id:aisle.id,customer_name:'Test'},400);
   await customer.save('/bookings',{showtime_id:sa,seat_id:(await seat('A1',hb)).id,customer_name:'Test'},400);
   const booked=await customer.save('/bookings',{showtime_id:sa,seat_id:a2.id,customer_name:'Test',audience:'student',voucher:'TEST10',phone:'0123456789',email:'test@example.invalid',['fnb_'+product]:1});const bid=Number(booked.location.split('/').pop());
-  let b=await one('SELECT * FROM bookings WHERE id=?',[bid]);assert.equal(Number(b.ticket_price),70000);assert.equal(Number(b.discount_amount),10000);assert.equal(Number(b.fnb_total),30000);
+  let b=await one('SELECT * FROM bookings WHERE id=?',[bid]);assert.equal(Number(b.ticket_price),70000);assert.equal(Number(b.discount_amount),10000);assert.equal(Number(b.fnb_total),30000);await admin.save('/admin/showtimes/'+sa+'/delete',{},409);
   await customer.save('/bookings',{showtime_id:sa,seat_id:a1.id,customer_name:'Test',voucher:'TEST10'},400);
   await customer.save('/bookings',{showtime_id:sa,seat_id:a2.id,customer_name:'Test'},409);
   await customer.save('/bookings/'+bid+'/pay',{});await customer.save('/bookings/'+bid+'/pay',{});assert.equal((await one('SELECT points FROM users WHERE username="customer"')).points,9);
@@ -70,6 +70,13 @@ class Client{
   const uploaded=await fetch('http://127.0.0.1:3000/admin/upload',{method:'POST',headers:{Cookie:Object.entries(admin.cookies).map(([k,v])=>k+'='+v).join('; '),'X-CSRF-Token':admin.cookies.booking_csrf,'Content-Type':'image/png'},body:png});assert.equal(uploaded.status,200);const image=await uploaded.json();assert.match(image.path,/^\/uploads\/[a-f0-9]{32}\.png$/);assert.equal((await new Client().request(image.path)).code,200);
   const report=await manager.request('/admin/reports?group=cinema');assert.equal(report.code,200);assert.ok(!report.body.includes('Test B'));assert.equal((await admin.request('/admin/reports.csv')).code,200);
   const uid=(await one('SELECT id FROM users WHERE username="customer"')).id;await admin.save('/admin/users/'+uid+'/lock',{});assert.equal((await customer.request('/my-bookings')).code,303);await admin.save('/admin/users/'+uid+'/lock',{});
+  const sb=(await one('SELECT id FROM showtimes WHERE hall_id=?',[hb])).id;
+  await manager.save('/admin/showtimes/'+sb+'/delete',{},403);
+  await admin.save('/admin/showtimes/'+sb+'/cancel',{});
+  assert.ok((await admin.request('/admin/showtimes')).body.includes('/admin/showtimes/'+sb+'/delete'));
+  await admin.save('/admin/showtimes/'+sb+'/delete',{});
+  assert.equal((await new Client().request('/showtimes/'+sb)).code,404);
+  assert.equal((await one('SELECT deleted FROM showtimes WHERE id=?',[sb])).deleted,1);
   for(const key of ['','movies','cinemas','halls','showtimes','pricing','bookings','checkin','vouchers','tiers','rewards','products','reports','users','content','settings'])assert.equal((await admin.request('/admin'+(key?'/'+key:''))).code,200,key);
   await admin.save('/admin/content/'+news+'/delete',{});assert.equal((await new Client().request('/news/'+news)).code,404);
   console.log('PASS isolated integration: CRUD, hidden movie, hall/seat types, overlap & cleanup, tenant RBAC, pricing, voucher limit, F&B snapshots, payment idempotency, QR/replay, exchange/refund, loyalty/rewards, CMS, account lock and CSV reports');
