@@ -51,7 +51,15 @@ docker compose exec -T app node < scripts/demo.js
 
 Script tạo suất chiếu và ghế còn thiếu, đặt vé A1 nếu chưa có và xác nhận thanh toán giả lập. Chạy lại không tạo thêm vé A1. Script dừng nếu ghế này thuộc người đặt khác. Dữ liệu demo là giả định, không lấy từ nguồn ngoài. Xem `docs/du-lieu-can-cung-cap.md`.
 
-## Kiểm tra và minh chứng
+## Đăng nhập và phân quyền website
+
+Mở http://localhost:8280/login. Tài khoản `admin` quản lý toàn bộ vé và thêm suất chiếu; `khachhang` chỉ xem/đặt/thanh toán giả lập vé của mình. Mật khẩu tương ứng ở WEB_ADMIN_PASSWORD và WEB_CUSTOMER_PASSWORD trong `.env`, khác tài khoản phpMyAdmin/Grafana. Triển khai lần đầu hoặc nâng cấp DB đã có bằng `bash scripts/apply-auth.sh` trong WSL. Xem `docs/phan-quyen.md`.
+
+Vé demo cũ chưa có chủ tài khoản chỉ admin xem được; vé demo A2 được tạo để kiểm tra khách hàng. Mọi quyền được kiểm tra ở server, không dựa vào việc ẩn nút trên giao diện. Đăng nhập bằng username/password, mật khẩu băm scrypt, phiên lưu DB, cookie HttpOnly/SameSite và token CSRF.
+
+Kiểm tra phân quyền trên Windows: `python scripts/verify-auth.py`. Script dùng hai tài khoản demo và tạo tối đa một vé A2 nếu khách chưa có vé.
+
+## Kiểm tra kỹ thuật
 
 ```bash
 docker compose exec -T app node < scripts/verify-hardening.js
@@ -59,7 +67,7 @@ docker compose exec -T app node < scripts/verify-hardening.js
 
 Trên Windows, dùng Python có sẵn chạy `python scripts/verify-stack.py` (không cần cài thư viện bên ngoài). Script kiểm tra headers, DB health, metrics, dashboard và ba LogQL. Đợi Prometheus scrape ít nhất hai lần và Promtail gửi log đầu tiên trước khi kiểm tra. Báo cáo và hướng dẫn ảnh nằm trong `docs/bao-cao-thuc-hanh.md` và `docs/huong-dan-demo.md`.
 
-Giới hạn: bản thực hành chưa có tài khoản người dùng website, chưa HTTPS và chưa kiểm thử tải; chỉ dùng localhost. cAdvisor có privileged để lấy metrics, không áp dụng cấu hình này như một mẫu production.
+Giới hạn: bản thực hành chưa HTTPS, chưa có đăng ký tự do hay giao diện thay đổi vai trò và chưa kiểm thử tải; chỉ dùng localhost. cAdvisor có privileged để lấy metrics, không áp dụng cấu hình này như một mẫu production.
 
 Kiểm tra môi trường từ PowerShell:
 
