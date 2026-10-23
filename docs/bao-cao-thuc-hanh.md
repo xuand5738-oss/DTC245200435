@@ -71,7 +71,9 @@ Express 4.22.3 và mysql2 3.24.6 được khóa bằng package-lock.json; npm au
 
 ## 6. Cấu hình Nginx reverse proxy
 
-[Bổ sung cấu hình, giải thích chuyển tiếp yêu cầu, HTTPS/security headers và kết quả kiểm tra.]
+Nginx nhận yêu cầu ở cổng 8280 của máy chủ, chuyển tiếp tới `app:3000` bằng `proxy_pass`. Container app không còn công bố cổng ra Windows. Các header Host, X-Real-IP, X-Forwarded-For và X-Forwarded-Proto được chuyển tới backend. Đề cho phép HTTPS tự ký hoặc security headers; bài này chọn security headers, chưa triển khai HTTPS.
+
+File `nginx/default.conf` đặt X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy và Content-Security-Policy; ẩn phiên bản Nginx. Kiểm tra bằng `docker compose exec nginx nginx -t` và `curl -I http://localhost:8280/`. `/health` qua Nginx phải trả database connected. Chụp trang website qua cổng 8280 và kết quả curl chứa các header để minh chứng.
 
 ## 7. Giám sát với Prometheus và Grafana
 
