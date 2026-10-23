@@ -53,6 +53,10 @@ Script tạo suất chiếu và ghế còn thiếu, đặt vé A1 nếu chưa c�
 
 ## Đăng nhập và phân quyền website
 
+### Quản trị rạp chiếu mở rộng
+
+Trang `/admin` có menu Phim, Cụm rạp, Phòng/sơ đồ ghế, Suất chiếu, Giá, Giao dịch, Soát vé, Voucher, Hạng/Quà, Bắp nước, Thống kê/CSV, Tài khoản/RBAC và CMS. Xem `docs/admin-mo-rong.md` để biết chức năng thực tế, trình tự nhập và các giới hạn giả lập. Nâng cấp DB cũ bằng `bash scripts/apply-cinema.sh` trước khi dùng bản mới. Không tự sinh phim/rạp/ảnh để lấp đầy giao diện.
+
 Giao diện các trang dùng chung phông chữ hỗ trợ tiếng Việt, định dạng ngày giờ Việt Nam/VND và tài nguyên nội bộ. Số ghế, vé và trạng thái lấy từ MySQL, không thêm dữ liệu mẫu trong lần đổi giao diện. Xem `docs/giao-dien.md` để kiểm tra đồng bộ dữ liệu và các màn hình.
 
 Mở http://localhost:8280/login. Tài khoản `admin` quản lý toàn bộ vé và thêm suất chiếu; `khachhang` chỉ xem/đặt/thanh toán giả lập vé của mình. Mật khẩu tương ứng ở WEB_ADMIN_PASSWORD và WEB_CUSTOMER_PASSWORD trong `.env`, khác tài khoản phpMyAdmin/Grafana. Triển khai lần đầu hoặc nâng cấp DB đã có bằng `bash scripts/apply-auth.sh` trong WSL. Xem `docs/phan-quyen.md`.
@@ -69,7 +73,7 @@ docker compose exec -T app node < scripts/verify-hardening.js
 
 Trên Windows, dùng Python có sẵn chạy `python scripts/verify-stack.py` (không cần cài thư viện bên ngoài). Script kiểm tra headers, DB health, metrics, dashboard và ba LogQL. Đợi Prometheus scrape ít nhất hai lần và Promtail gửi log đầu tiên trước khi kiểm tra. Báo cáo và hướng dẫn ảnh nằm trong `docs/bao-cao-thuc-hanh.md` và `docs/huong-dan-demo.md`.
 
-Giới hạn: bản thực hành chưa HTTPS, chưa có đăng ký tự do hay giao diện thay đổi vai trò và chưa kiểm thử tải; chỉ dùng localhost. cAdvisor có privileged để lấy metrics, không áp dụng cấu hình này như một mẫu production.
+Giới hạn: bản thực hành chưa HTTPS, chưa đăng ký tự do, chưa tích hợp thanh toán/hoàn tiền thật và chưa kiểm thử tải; chỉ dùng localhost. Cấu hình thanh toán mới là giả lập nội bộ. cAdvisor có privileged để lấy metrics, không áp dụng cấu hình này như một mẫu production.
 
 Kiểm tra môi trường từ PowerShell:
 
