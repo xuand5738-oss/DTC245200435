@@ -10,3 +10,7 @@ cleanup() {
 trap cleanup EXIT
 docker compose -f compose.yaml -f compose.integration.yaml up -d app-test
 docker compose -f compose.yaml -f compose.integration.yaml exec -T app-test node < scripts/test-cinema.js
+docker compose -f compose.yaml -f compose.integration.yaml exec -T app-test node - prepare < scripts/test-legacy-hall.js
+docker compose -f compose.yaml -f compose.integration.yaml exec -T app-test node < scripts/attach-legacy-hall.js
+docker compose -f compose.yaml -f compose.integration.yaml exec -T app-test node < scripts/attach-legacy-hall.js
+docker compose -f compose.yaml -f compose.integration.yaml exec -T app-test node - verify < scripts/test-legacy-hall.js

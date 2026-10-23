@@ -113,6 +113,8 @@ Script thêm 3 phim (2 đang chiếu, 1 sắp chiếu), 1 rạp, 2 phòng với 
 
 `scripts/demo.js` là script lịch sử dùng phiên admin, không còn phù hợp với phân quyền hiện tại: yêu cầu đặt/thanh toán bị trả 403. Không dùng script này để tạo lại demo; dùng `seed-cinema-demo.js` và tài khoản khách hàng như trên. Các vé demo cũ vẫn giữ trong lịch sử.
 
+Với dữ liệu demo đầu tiên có suất #1 và đúng 8 ghế chưa gắn phòng, script thủ công `docker compose exec -T app node < scripts/attach-legacy-hall.js` bổ sung phòng 2 × 4 ghế và liên kết suất/ghế cũ. Sao lưu DB trước khi chạy. Script giữ nguyên các bản ghi vé và thanh toán, kiểm tra điều kiện trong transaction; chạy lại khi suất đã có phòng không tạo thêm phòng. Không dùng script này để tự chuyển các lịch khác hoặc thay trạng thái phim. Kiểm thử chuyển phòng nằm trong `scripts/test-cinema.sh`.
+
 ## Kiểm tra kỹ thuật
 
 Chạy trong Ubuntu:
