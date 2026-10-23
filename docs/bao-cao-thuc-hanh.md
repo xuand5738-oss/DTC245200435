@@ -87,6 +87,8 @@ Express 4.22.3 và mysql2 3.24.6 được khóa bằng package-lock.json; npm au
 
 ## 10. Kiểm tra tổng thể và demo
 
+**Sự cố môi trường đã gặp:** website trong WSL trả HTTP 200, nhưng sau khi phiên WSL kết thúc thì Windows không kết nối được; container bị dừng và khởi động lại ở lần gọi WSL tiếp theo. Giữ phiên Ubuntu tương tác mở bằng `start-wsl.ps1` giúp Windows truy cập lại cả website và phpMyAdmin với HTTP 200. Không thay đổi dữ liệu DB để xử lý sự cố này.
+
 [Bổ sung kết quả Docker Compose, kịch bản đặt vé, đối chiếu DB, metrics, log và bảo mật. Ghi lỗi gặp phải và cách xử lý thực tế.]
 
 ## 11. Kết quả và tài liệu tham khảo

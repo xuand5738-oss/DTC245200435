@@ -14,6 +14,15 @@ Chỉ sử dụng tài liệu học phần đã cung cấp. Dữ liệu phim/s�
 
 ## Chạy ứng dụng trong Ubuntu WSL
 
+Trên máy hiện tại, cần giữ một phiên Ubuntu mở để tránh WSL tự dừng sau khi lệnh kết thúc. Từ PowerShell chạy:
+
+```powershell
+cd D:\DTC245200435
+powershell -ExecutionPolicy Bypass -File .\start-wsl.ps1
+```
+
+Giữ cửa sổ này mở trong lúc dùng website. Script chỉ khởi động stack và mở phiên Bash, không thay đổi dữ liệu. Nếu đóng phiên cuối cùng rồi website không truy cập được, chạy lại script. Việc này khác với `docker compose up -d`: cờ `-d` giữ container chạy nền nhưng không giữ phiên WSL hoạt động trên máy hiện tại.
+
 ```bash
 cd /mnt/d/DTC245200435
 cp .env.example .env  # chỉ làm nếu chưa có .env
