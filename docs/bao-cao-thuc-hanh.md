@@ -77,7 +77,11 @@ File `nginx/default.conf` đặt X-Content-Type-Options: nosniff, X-Frame-Option
 
 ## 7. Giám sát với Prometheus và Grafana
 
-[Bổ sung exporter, targets và dashboard cho container, web server, database.]
+Prometheus lấy metrics mỗi 15 giây theo `monitoring/prometheus.yml`. Bốn job là chính Prometheus, Nginx exporter, MySQL exporter và cAdvisor. Prometheus chỉ nối mạng monitor; MySQL exporter nối cả backend và monitor để chuyển số liệu từ DB mà không nối trực tiếp Prometheus vào DB.
+
+Grafana được provision datasource và dashboard từ file Git. Dashboard `De 11 - Container, Nginx, MySQL` có tám panel: tình trạng targets, kết nối Nginx, tốc độ request, MySQL alive, số kết nối MySQL, tốc độ query, CPU container và RAM container. Bộ lọc `name=~"topic11-.*"` tránh đưa container dự án cũ vào panel của bài này.
+
+Đã kiểm tra `up` của bốn targets bằng 1, `nginx_up=1`, `mysql_up=1`, có chuỗi RAM của container topic11. Grafana API xác nhận dashboard có tám panel. Mở `http://localhost:8290/targets` để tự chụp targets; đăng nhập Grafana `http://localhost:8300`, user admin, mật khẩu GRAFANA_PASSWORD trong `.env`, vào dashboard để tự chụp. Không đưa mật khẩu vào báo cáo.
 
 ## 8. Log tập trung với Loki và Promtail
 

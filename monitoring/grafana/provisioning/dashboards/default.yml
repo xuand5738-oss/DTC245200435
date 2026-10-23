@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: topic11
+    folder: De tai 11
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards
