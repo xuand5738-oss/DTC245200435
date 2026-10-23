@@ -33,7 +33,7 @@ Trên PowerShell, dùng `wsl --list --verbose` để thấy bản Ubuntu sử d�
 
 ## 3. Kiến trúc và cách hoạt động
 
-[Bổ sung sơ đồ, luồng trình duyệt → Nginx → ứng dụng → MySQL, mạng và volume theo cấu hình thực tế.]
+Giai đoạn ứng dụng: trình duyệt truy cập cổng 8280 trên localhost, được chuyển vào cổng 3000 của container Express. Ứng dụng kết nối MySQL qua tên dịch vụ `db` trong mạng backend. phpMyAdmin công bố cổng 8281, kết nối cùng MySQL để xem cấu trúc và dữ liệu. MySQL không công bố cổng ra máy chủ. Mạng backend dùng `internal: true`; dữ liệu được giữ trong named volume. Nginx sẽ được bổ sung trong nhiệm vụ tiếp theo, hiện chưa nằm trên luồng truy cập.
 
 ## 4. Quản lý mã nguồn trên GitHub
 
@@ -43,7 +43,31 @@ Repository: https://github.com/xuand5738-oss/DTC245200435
 
 ## 5. Triển khai ứng dụng, MySQL và phpMyAdmin
 
-[Bổ sung dữ liệu được cung cấp, các bước chạy, đặt vé và thanh toán giả lập; ảnh website và dữ liệu DB khớp nhau.]
+### 5.1. Cấu trúc dữ liệu
+
+MySQL có ba bảng: `showtimes` lưu tên, thời điểm và giá suất chiếu; `seats` lưu nhãn ghế; `bookings` lưu suất chiếu, ghế, tên người đặt và trạng thái thanh toán. Khóa ngoại giữ liên kết dữ liệu. Ràng buộc UNIQUE trên cặp `showtime_id, seat_id` ngăn hai lượt đặt cùng ghế trong cùng suất chiếu, kể cả khi gửi yêu cầu đồng thời.
+
+### 5.2. Khởi động
+
+Trong terminal Ubuntu, vào `/mnt/d/DTC245200435`, chạy `docker compose up -d --build`. Compose đợi MySQL healthy rồi khởi động ứng dụng. Chạy `bash scripts/check-app.sh` để kiểm tra cấu hình, dịch vụ, kết nối DB và các bảng; script không thêm dữ liệu.
+
+### 5.3. Luồng đặt vé
+
+Người dùng chọn suất chiếu, ghế và nhập họ tên. Ứng dụng ghi một booking ở trạng thái `pending`. Nút xác nhận thanh toán giả lập đổi trạng thái thành `simulated_paid`, không kết nối ngân hàng và không thu tiền thật. Câu SQL nhận đầu vào dùng tham số, nội dung hiển thị được escape HTML.
+
+**Chưa kiểm chứng luồng đặt vé thành công:** đang chờ dữ liệu phim, suất chiếu, ghế và giá vé từ sinh viên. Không thêm dữ liệu mẫu.
+
+### 5.4. Ảnh sinh viên tự chụp
+
+1. Website `http://localhost:8280` ở trạng thái chờ dữ liệu — chỉ minh chứng ứng dụng truy cập được.
+2. Sau khi tự đăng nhập phpMyAdmin tại `http://localhost:8281`, mở database `ticket_booking` để chụp ba bảng. Không để mật khẩu xuất hiện.
+3. Sau khi sinh viên cung cấp dữ liệu: chụp chọn ghế, thông tin vé, thanh toán giả lập và bản ghi tương ứng trong DB. Chưa thể chụp phần này hiện tại.
+
+### 5.5. Kết quả đã kiểm tra
+
+Docker Compose khởi động đủ app, db và phpmyadmin. Endpoint `/health` trả `status: ok` và `database: connected`. Website và phpMyAdmin trả HTTP 200. Yêu cầu đặt vé thiếu thông tin bị từ chối với HTTP 400; mã suất chiếu không tồn tại trả HTTP 404. Ba bảng showtimes, seats và bookings đều có 0 bản ghi, đúng yêu cầu chưa thêm dữ liệu. Chưa kiểm tra đặt vé thành công, tranh chấp ghế và thanh toán giả lập trên dữ liệu thật.
+
+Express 4.22.3 và mysql2 3.24.6 được khóa bằng package-lock.json; npm audit khi build không báo lỗ hổng tại thời điểm kiểm tra. Đây chỉ là kiểm tra thư viện npm, chưa phải quét image hay đánh giá toàn bộ bảo mật.
 
 ## 6. Cấu hình Nginx reverse proxy
 

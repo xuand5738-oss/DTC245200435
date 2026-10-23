@@ -10,7 +10,26 @@ Chỉ sử dụng tài liệu học phần đã cung cấp. Dữ liệu phim/s�
 
 ## Trạng thái
 
-Đã lập phạm vi và khung báo cáo, kiểm tra Ubuntu 24.04.5 trên WSL 2, Docker Engine 29.1.3 và Compose 2.40.3 hoạt động. Chưa triển khai ứng dụng; chưa có lệnh khởi chạy hệ thống để xác nhận.
+Đã lập phạm vi, khung báo cáo và mã nguồn ứng dụng Express + MySQL + phpMyAdmin. Chưa có dữ liệu nghiệp vụ. Các thành phần Nginx, giám sát và log sẽ được bổ sung ở những nhiệm vụ tiếp theo.
+
+## Chạy ứng dụng trong Ubuntu WSL
+
+```bash
+cd /mnt/d/DTC245200435
+cp .env.example .env  # chỉ làm nếu chưa có .env
+# Sửa hai mật khẩu trong .env thành hai mật khẩu mạnh khác nhau trước khi chạy.
+docker compose up -d --build
+bash scripts/check-app.sh
+```
+
+Môi trường hiện tại đã có `.env` sinh mật khẩu ngẫu nhiên và không đưa vào Git. Không ghi đè tệp này. Không đổi mật khẩu trong `.env` khi DB đã khởi tạo mà chưa đổi mật khẩu tài khoản tương ứng trong MySQL.
+
+- Website: http://localhost:8280
+- phpMyAdmin: http://localhost:8281 — máy chủ `db`, tài khoản là `MYSQL_USER` và mật khẩu `MYSQL_PASSWORD` trong `.env`. Chưa cấu hình tự đăng nhập. Không chụp mật khẩu vào báo cáo.
+- MySQL không công bố cổng ra Windows. Dữ liệu nằm trong volume `topic11_mysql_data`, độc lập với hệ thống cũ.
+- Dừng bằng `docker compose stop`; chạy lại bằng `docker compose up -d`. Không dùng `docker compose down -v` vì sẽ xóa dữ liệu.
+
+Trang ban đầu hiện thông báo chưa có suất chiếu là đúng thiết kế khi chưa được cung cấp dữ liệu. Xem `docs/du-lieu-can-cung-cap.md`.
 
 Kiểm tra môi trường từ PowerShell:
 

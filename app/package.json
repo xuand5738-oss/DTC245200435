@@ -1,0 +1,1 @@
+{"name":"topic11-booking","version":"1.0.0","private":true,"scripts":{"start":"node server.js"},"dependencies":{"express":"4.22.3","mysql2":"3.24.6"}}
