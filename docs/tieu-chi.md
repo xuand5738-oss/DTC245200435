@@ -2,6 +2,12 @@
 
 Nguồn: De_Tai_Thuc_Hanh - TKQT HTPM K23.pdf, trang 1–2 và đề 11 trang 4.
 
+## Phạm vi sinh viên xác nhận ngày 24/10/2026
+
+Sinh viên yêu cầu không tiếp tục phần báo cáo và giữ tài khoản GitHub hiện tại; sinh viên sẽ xác nhận yêu cầu tên tài khoản với giảng viên. Đây là lựa chọn về phạm vi thực hiện, không phải xác nhận giảng viên miễn yêu cầu gốc. Các tệp báo cáo đã có được giữ nguyên.
+
+Rà soát kỹ thuật cuối: 11 dịch vụ chạy; app và DB healthy; cấu hình Nginx hợp lệ; bốn targets UP; nginx_up/mysql_up bằng 1; metrics container có dữ liệu; Grafana có tám panel; ba LogQL có kết quả. UID app 1000, không có ALL PRIVILEGES/GRANT OPTION, CREATE TABLE bị từ chối. Không tạo thêm vé trong lần rà soát này. Ảnh và trình bày trực tiếp vẫn do sinh viên thực hiện.
+
 | Tiêu chí | Điểm | Bằng chứng cần có | Trạng thái |
 |---|---:|---|---|
 | GitHub | 1,5 | Source, cấu hình, README hướng dẫn chạy, 3 commit có ý nghĩa theo các mốc | Đã push source, cấu hình, README và đủ ba mốc; tài khoản xuand5738-oss chưa theo MSSV |
