@@ -55,3 +55,14 @@ bash scripts/test-cinema.sh
 Script tạo database topic11_test_<chuỗi ngẫu nhiên> và app-test không công bố cổng, tạo fixtures tách biệt để kiểm tra CRUD, lịch/cleanup, các loại ghế, phân quyền rạp, quy tắc giá, voucher hết lượt, combo snapshot, thanh toán idempotent, check-in đồng thời/replay, đổi/hủy, điểm/quà, CMS, tải ảnh và khóa user. Sau đó xóa đúng database/container kiểm thử. Không chạy fixtures vào website chính.
 
 Các kiểm tra cũ verify-auth.py, verify-stack.py, verify-ui.py và verify-hardening.js vẫn được giữ. Không có thao tác tự chụp ảnh; sinh viên chủ động mở các màn hình quản trị để xem/chụp. Phần báo cáo môn học tiếp tục nằm ngoài phạm vi làm tiếp theo lựa chọn trước của sinh viên.
+# Luồng quản trị liên thông
+
+- Tổng quan hiển thị các bước vận hành và số liệu cần xử lý từ MySQL: phim thiếu thời lượng/nhãn tuổi, phòng chưa có ghế, lịch cũ chưa gắn phòng, yêu cầu đổi/hủy chờ duyệt.
+- Trong **Phim**, bấm **Lịch chiếu** để xem lịch của phim và chọn sẵn phim cho lịch mới. **Xem trên website** mở thông tin khách hàng đang nhìn thấy.
+- Trong **Cụm rạp**, bấm **Phòng của rạp** để lọc phòng và chọn sẵn rạp khi tạo phòng. Trong phòng, mở **Sơ đồ ghế** hoặc **Lịch phòng**. Từ sơ đồ ghế có thể quay lại danh sách phòng hoặc lên lịch cho phòng đó.
+- Trong **Suất chiếu**, lọc theo phim/phòng; admin mở **Vé của suất** để tra cứu vé và yêu cầu đổi/hủy thuộc đúng suất. Bộ lọc suất được giữ khi tìm mã vé, điện thoại hoặc email.
+- Đổi vé ở trang vé khách hàng và trang CSKH dùng chung danh sách suất mở bán và ghế còn trống. Không cần tra ID. Chỉ nhận đổi cùng giá vé đã lưu; vé chênh lệch cần hủy/hoàn giả lập rồi đặt lại. Ghế được kiểm tra khi tạo yêu cầu và khi duyệt; danh sách hiển thị không giữ chỗ.
+- Quản lý rạp vẫn chỉ xem/lên lịch phòng thuộc rạp được phân công. Nhân viên soát vé không có quyền truy cập dữ liệu lựa chọn đổi vé.
+
+Các thay đổi này không thêm dữ liệu nghiệp vụ mẫu vào cơ sở dữ liệu đang sử dụng. Lịch cũ đã bán vé được giữ để bảo toàn lịch sử. Không tự gán phòng, thời lượng hoặc nhãn tuổi còn thiếu.
+

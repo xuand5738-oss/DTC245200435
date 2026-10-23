@@ -37,6 +37,10 @@ class Client{
   assert.equal((await one('SELECT title FROM movies WHERE id=?',[movie])).title,'Phim kiểm thử đã sửa');
   const hall=async(name,cinema)=>{await admin.save('/admin/halls/save',{name,cinema_id:cinema,row_count:1,col_count:4,cleanup_minutes:15});const h=(await one('SELECT id FROM halls WHERE name=?',[name])).id;await admin.save(`/admin/halls/${h}/seats`,{cell_1_1:'regular',cell_1_2:'vip',cell_1_3:'couple',cell_1_4:'aisle',vip:10000,couple:20000});return h;};
   const ha=await hall('Hall A',ca),hb=await hall('Hall B',cb);
+  assert.ok((await admin.request('/admin/movies')).body.includes('/admin/showtimes?movie_id='+movie));
+  const rooms=(await admin.request('/admin/halls?cinema_id='+ca)).body;
+  assert.ok(rooms.includes('Hall A'));assert.ok(!rooms.includes('Hall B'));
+  assert.ok(rooms.includes('/admin/showtimes?hall_id='+ha));
   await admin.save('/admin/showtimes/save',{movie_id:movie,hall_id:ha,starts_at:'2030-06-10T19:00',price:80000,format:'2D'});const sa=(await one('SELECT id FROM showtimes WHERE hall_id=?',[ha])).id;
   await admin.save('/admin/showtimes/save',{movie_id:movie,hall_id:ha,starts_at:'2030-06-10T20:40',price:80000,format:'2D'},409);
   await admin.save('/admin/showtimes/save',{movie_id:movie,hall_id:ha,starts_at:'2030-06-10T20:45',price:80000,format:'2D'});const sa2=(await one('SELECT MAX(id) AS id FROM showtimes')).id;
@@ -44,6 +48,14 @@ class Client{
   await admin.save(`/admin/halls/${ha}/seats`,{cell_1_1:'regular',cell_1_2:'vip',cell_1_3:'couple',cell_1_4:'aisle',vip:0,couple:0},400);
   for(const [name,role,cinema] of [['manager','manager',ca],['staff','staff',ca],['staffb','staff',cb],['support','support',ca]])await admin.save('/admin/users/save',{username:name,display_name:name,password,role,cinema_id:cinema,phone:'',email:''});
   const manager=new Client(),staff=new Client(),staffb=new Client(),support=new Client();await manager.login('manager');await staff.login('staff');await staffb.login('staffb');await support.login('support');
+  assert.equal((await manager.request('/admin/showtimes?hall_id='+hb)).code,404);
+  assert.equal((await staff.request('/booking-options')).code,403);
+  const filtered=(await admin.request('/admin/showtimes?hall_id='+ha)).body;
+  assert.ok(filtered.includes('/admin/bookings?showtime_id='+sa));
+  assert.ok(!filtered.includes('/admin/showtimes?edit='+(await one('SELECT id FROM showtimes WHERE hall_id=?',[hb])).id+'"'));
+  const exchangeOptions=JSON.parse((await customer.request('/booking-options?showtime_id='+sa)).body);
+  assert.equal(exchangeOptions.length,3);assert.ok(exchangeOptions.every(s=>s.label!=='A4'));
+  assert.equal((await admin.request('/admin/bookings?showtime_id=invalid')).code,400);
   assert.equal((await manager.request('/admin/movies')).code,403);assert.equal((await staff.request('/admin/reports')).code,403);assert.equal((await support.request('/admin/settings')).code,403);assert.equal((await customer.request('/admin/users')).code,403);
   assert.equal((await staff.request('/bookings/1')).code,403);
   await manager.save('/admin/showtimes/save',{movie_id:movie,hall_id:hb,starts_at:'2030-06-11T19:00',price:80000,format:'2D'},403);

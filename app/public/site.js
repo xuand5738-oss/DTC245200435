@@ -1,4 +1,19 @@
 'use strict';
+// Shared exchange controls for customers and support; IDs remain internal values.
+const exchangeShows=document.querySelectorAll('[data-exchange-show]');
+if(exchangeShows.length){
+ const load=async url=>{const r=await fetch(url,{headers:{Accept:'application/json'}});if(!r.ok)throw Error('Không tải được lựa chọn. Hãy tải lại trang.');return r.json();};
+ const fill=(select,rows,placeholder,label)=>{select.replaceChildren(new Option(placeholder,''),...rows.map(row=>new Option(label(row),row.id)));};
+ load('/booking-options').then(rows=>{for(const select of exchangeShows){
+  fill(select,rows,'Chọn suất chiếu',r=>r.label);
+  const seat=select.form.querySelector('[data-exchange-seat]'),kind=select.form.querySelector('[name="kind"]');
+  const toggle=()=>{select.disabled=seat.disabled=kind.value!=='exchange';select.required=seat.required=kind.value==='exchange';};
+  kind.addEventListener('change',toggle);toggle();
+  select.addEventListener('change',async()=>{const value=select.value;fill(seat,[],value?'Đang tải ghế…':'Chọn suất trước',r=>r.label);if(!value)return;
+   try{const seats=await load('/booking-options?showtime_id='+encodeURIComponent(value));if(select.value===value)fill(seat,seats,seats.length?'Chọn ghế còn trống':'Không còn ghế trống',r=>r.label+' · '+({regular:'Thường',vip:'VIP',couple:'Sweetbox'}[r.seat_type]||r.seat_type));}catch(error){fill(seat,[],error.message,r=>r.label);}
+  });
+ }}).catch(error=>{for(const select of exchangeShows)fill(select,[],error.message,r=>r.label);});
+}
 // Progressive enhancement only; DB ownership and booking validation remain server-side.
 const form=document.querySelector('[data-booking-form]');
 if(form){
