@@ -69,6 +69,10 @@ class Client{
   assert.equal((await admin.request('/membership')).code,403);
   const adminShow=(await admin.request('/showtimes/'+sa)).body;
   assert.ok(!adminShow.includes('data-booking-form'));assert.ok(!adminShow.includes('Tiếp tục đặt vé'));
+  assert.equal((await admin.request('/showtimes/'+sa)).location,'/admin/showtimes/'+sa+'/seats');
+  assert.equal((await customer.request('/admin/showtimes/'+sa+'/seats')).code,403);
+  assert.equal((await manager.request('/admin/showtimes/'+(await one('SELECT id FROM showtimes WHERE hall_id=?',[hb])).id+'/seats')).code,404);
+  assert.equal((await staff.request('/admin/showtimes/'+sa+'/seats')).code,403);
   await customer.save('/bookings',{showtime_id:sa,seat_id:aisle.id,customer_name:'Test'},400);
   await customer.save('/bookings',{showtime_id:sa,seat_id:(await seat('A1',hb)).id,customer_name:'Test'},400);
   const booked=await customer.save('/bookings',{showtime_id:sa,seat_id:a2.id,customer_name:'Test',audience:'student',voucher:'TEST10',phone:'0123456789',email:'test@example.invalid',['fnb_'+product]:1});const bid=Number(booked.location.split('/').pop());
@@ -77,9 +81,12 @@ class Client{
   const adminTicket=(await admin.request('/bookings/'+bid)).body;
   assert.ok(adminTicket.includes('CHI TIẾT GIAO DỊCH'));assert.ok(!adminTicket.includes('action="/bookings/'+bid+'/pay"'));assert.ok(!adminTicket.includes('href="/my-bookings"'));
   let b=await one('SELECT * FROM bookings WHERE id=?',[bid]);assert.equal(Number(b.ticket_price),70000);assert.equal(Number(b.discount_amount),10000);assert.equal(Number(b.fnb_total),30000);await admin.save('/admin/showtimes/'+sa+'/delete',{},409);
+  const pendingMap=(await admin.request('/admin/showtimes/'+sa+'/seats')).body;
+  assert.ok(pendingMap.includes('monitor-seat pending'));assert.ok(pendingMap.includes('href="/bookings/'+bid+'"'));assert.ok(!pendingMap.includes('action="/bookings"'));
   await customer.save('/bookings',{showtime_id:sa,seat_id:a1.id,customer_name:'Test',voucher:'TEST10'},400);
   await customer.save('/bookings',{showtime_id:sa,seat_id:a2.id,customer_name:'Test'},409);
   await customer.save('/bookings/'+bid+'/pay',{});await customer.save('/bookings/'+bid+'/pay',{});assert.equal((await one('SELECT points FROM users WHERE username="customer"')).points,9);
+  assert.ok((await admin.request('/admin/showtimes/'+sa+'/seats')).body.includes('monitor-seat paid'));
   assert.equal((await customer.request('/bookings/'+bid+'/qr.svg')).code,200);
   await staffb.save('/admin/checkin',{token:b.checkin_token},403);await staff.save('/admin/checkin',{token:b.checkin_token},200);await staff.save('/admin/checkin',{token:b.checkin_token},409);
   const r2=await customer.save('/bookings',{showtime_id:sa2,seat_id:a1.id,customer_name:'Test',phone:'0123456789'});const bid2=Number(r2.location.split('/').pop());await customer.save('/bookings/'+bid2+'/pay',{});

@@ -57,6 +57,8 @@ Script tạo database topic11_test_<chuỗi ngẫu nhiên> và app-test không c
 Các kiểm tra cũ verify-auth.py, verify-stack.py, verify-ui.py và verify-hardening.js vẫn được giữ. Không có thao tác tự chụp ảnh; sinh viên chủ động mở các màn hình quản trị để xem/chụp. Phần báo cáo môn học tiếp tục nằm ngoài phạm vi làm tiếp theo lựa chọn trước của sinh viên.
 # Luồng quản trị liên thông
 
+Trong **Suất chiếu**, chọn **Theo dõi ghế** để xem trạng thái theo từng suất: còn trống, chờ thanh toán, đã thanh toán và ngừng bán. Admin có thể mở vé từ ô ghế; quản lý rạp chỉ xem suất thuộc rạp được phân công. Trang này chỉ đọc, không có thao tác đặt vé/thanh toán/chỉnh sơ đồ. Lịch không mở bán vẫn xem được để quản lý lịch sử. Truy cập `/showtimes/:id` bằng admin/quản lý được chuyển sang `/admin/showtimes/:id/seats`. Tải lại trang để lấy trạng thái mới từ MySQL.
+
 ## Bộ dữ liệu giả lập bổ sung theo yêu cầu
 
 Chạy thủ công trong WSL: `docker compose exec -T app node < scripts/seed-cinema-demo.js`.
