@@ -17,7 +17,7 @@ Dữ liệu demo giả định được tạo sau khi sinh viên cho phép: mộ
 
 ## 2. Chuẩn bị môi trường
 
-Môi trường đã kiểm tra: Ubuntu 24.04.5 LTS trên WSL 2; Docker Engine 29.1.3; Docker Compose 2.40.3+ds1-0ubuntu1~24.04.1. Lệnh docker version trả về cả Client và Server, xác nhận Docker Engine có phản hồi. Phiên Linux hiện chạy bằng tài khoản root. Chưa triển khai container của đề tài.
+Môi trường đã kiểm tra: Ubuntu 24.04.5 LTS trên WSL 2; Docker Engine 29.1.3; Docker Compose 2.40.3+ds1-0ubuntu1~24.04.1. Lệnh docker version trả về cả Client và Server, xác nhận Docker Engine có phản hồi. Phiên Linux hiện chạy bằng tài khoản root; container app chạy riêng bằng USER node, UID 1000.
 
 Để tự kiểm tra và chụp ảnh, mở terminal Ubuntu-24.04, chạy lần lượt:
 
@@ -33,13 +33,13 @@ Trên PowerShell, dùng `wsl --list --verbose` để thấy bản Ubuntu sử d�
 
 ## 3. Kiến trúc và cách hoạt động
 
-Giai đoạn ứng dụng: trình duyệt truy cập cổng 8280 trên localhost, được chuyển vào cổng 3000 của container Express. Ứng dụng kết nối MySQL qua tên dịch vụ `db` trong mạng backend. phpMyAdmin công bố cổng 8281, kết nối cùng MySQL để xem cấu trúc và dữ liệu. MySQL không công bố cổng ra máy chủ. Mạng backend dùng `internal: true`; dữ liệu được giữ trong named volume. Nginx sẽ được bổ sung trong nhiệm vụ tiếp theo, hiện chưa nằm trên luồng truy cập.
+Trình duyệt truy cập cổng 8280 trên localhost, tới Nginx cổng 8080, sau đó proxy tới app:3000. Ứng dụng kết nối MySQL qua tên dịch vụ `db` trong mạng backend. phpMyAdmin công bố cổng 8281, kết nối cùng MySQL để xem cấu trúc và dữ liệu. MySQL và app không công bố cổng trực tiếp ra máy chủ. Mạng backend dùng `internal: true`; dữ liệu được giữ trong named volume. Mạng monitor dùng cho Prometheus, Grafana, exporters, Loki và Promtail; Nginx nối frontend và monitor.
 
 ## 4. Quản lý mã nguồn trên GitHub
 
 Repository: https://github.com/xuand5738-oss/DTC245200435
 
-[Bổ sung các commit, cấu trúc thư mục và hướng dẫn dựng hệ thống khi đã triển khai.]
+Mã nguồn app, Compose, Nginx, cấu hình monitoring/logging, script kiểm tra và báo cáo nằm trong cùng repository. README có hướng dẫn chạy, truy cập và kiểm tra. Ba commit theo mốc: 201ea21 cho Nginx, ca5ed5a cho giám sát, 3d26c86 cho log. Commit 379794e bổ sung demo. Tệp .env và các thư mục tạm bị loại khỏi Git. Tài khoản GitHub hiện là xuand5738-oss; sinh viên cần xác nhận yêu cầu đặt tên tài khoản theo MSSV với giảng viên.
 
 ## 5. Triển khai ứng dụng, MySQL và phpMyAdmin
 
