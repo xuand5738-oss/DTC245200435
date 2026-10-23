@@ -66,6 +66,8 @@ Script ghi dấu `demo_catalog_v1` trong cấu hình và không thêm lại khi 
 
 Menu “Vé của tôi” và “Thành viên” chỉ dành cho khách hàng. Admin/CSKH có liên kết “Giao dịch”; chi tiết vé dẫn trở lại danh sách giao dịch khi truy cập bằng vai trò quản trị.
 
+Chỉ vai trò `customer` được tạo vé, xác nhận thanh toán giả lập, sử dụng trang vé cá nhân và đổi quà. Admin/nhân sự xem suất chiếu ở chế độ thông tin, không có form đặt vé. Máy chủ trả 403 nếu tài khoản nhân sự gửi trực tiếp yêu cầu đặt/thanh toán hoặc dùng luồng yêu cầu đổi/hủy của khách hàng. Admin/CSKH xử lý đổi/hủy qua chức năng Giao dịch được phân quyền. Vé cũ do admin tạo trước khi sửa quyền vẫn giữ trong lịch sử, không tự động xóa hay thanh toán.
+
 - Tổng quan hiển thị các bước vận hành và số liệu cần xử lý từ MySQL: phim thiếu thời lượng/nhãn tuổi, phòng chưa có ghế, lịch cũ chưa gắn phòng, yêu cầu đổi/hủy chờ duyệt.
 - Trong **Phim**, bấm **Lịch chiếu** để xem lịch của phim và chọn sẵn phim cho lịch mới. **Xem trên website** mở thông tin khách hàng đang nhìn thấy.
 - Trong **Cụm rạp**, bấm **Phòng của rạp** để lọc phòng và chọn sẵn rạp khi tạo phòng. Trong phòng, mở **Sơ đồ ghế** hoặc **Lịch phòng**. Từ sơ đồ ghế có thể quay lại danh sách phòng hoặc lên lịch cho phòng đó.

@@ -64,9 +64,18 @@ class Client{
   await admin.save('/admin/vouchers/save',{code:'TEST10',kind:'percent',amount:10,min_total:0,quantity:1,starts_at:'2020-01-01T00:00',ends_at:'2040-01-01T00:00',active:1});
   await admin.save('/admin/products/save',{name:'Combo kiểm thử',category:'Combo',description:'',price:30000,image:'',active:1});const product=(await one('SELECT id FROM products')).id;
   const seat=(label,h)=>one('SELECT id FROM seats WHERE hall_id=? AND label=?',[h,label]);const a1=await seat('A1',ha),a2=await seat('A2',ha),aisle=await seat('A4',ha);
+  for(const client of [admin,manager,staff,support])await client.save('/bookings',{showtime_id:sa,seat_id:a1.id,customer_name:'Forbidden'},403);
+  assert.equal((await admin.request('/my-bookings')).code,403);
+  assert.equal((await admin.request('/membership')).code,403);
+  const adminShow=(await admin.request('/showtimes/'+sa)).body;
+  assert.ok(!adminShow.includes('data-booking-form'));assert.ok(!adminShow.includes('Tiếp tục đặt vé'));
   await customer.save('/bookings',{showtime_id:sa,seat_id:aisle.id,customer_name:'Test'},400);
   await customer.save('/bookings',{showtime_id:sa,seat_id:(await seat('A1',hb)).id,customer_name:'Test'},400);
   const booked=await customer.save('/bookings',{showtime_id:sa,seat_id:a2.id,customer_name:'Test',audience:'student',voucher:'TEST10',phone:'0123456789',email:'test@example.invalid',['fnb_'+product]:1});const bid=Number(booked.location.split('/').pop());
+  await admin.save('/bookings/'+bid+'/pay',{},403);
+  await admin.save('/bookings/'+bid+'/request',{kind:'cancel',reason:'Forbidden'},403);
+  const adminTicket=(await admin.request('/bookings/'+bid)).body;
+  assert.ok(adminTicket.includes('CHI TIẾT GIAO DỊCH'));assert.ok(!adminTicket.includes('action="/bookings/'+bid+'/pay"'));assert.ok(!adminTicket.includes('href="/my-bookings"'));
   let b=await one('SELECT * FROM bookings WHERE id=?',[bid]);assert.equal(Number(b.ticket_price),70000);assert.equal(Number(b.discount_amount),10000);assert.equal(Number(b.fnb_total),30000);await admin.save('/admin/showtimes/'+sa+'/delete',{},409);
   await customer.save('/bookings',{showtime_id:sa,seat_id:a1.id,customer_name:'Test',voucher:'TEST10'},400);
   await customer.save('/bookings',{showtime_id:sa,seat_id:a2.id,customer_name:'Test'},409);
