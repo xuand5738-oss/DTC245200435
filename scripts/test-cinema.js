@@ -22,12 +22,16 @@ class Client{
  const db=await mysql.createConnection({host:process.env.DB_HOST,user:process.env.DB_USER,password:process.env.DB_PASSWORD,database:process.env.DB_NAME,dateStrings:true,charset:'utf8mb4'});
  const one=async(sql,args=[])=>{const [[r]]=await db.execute(sql,args);return r;};
  try{
+  const migrated=await one("SELECT s.movie_id,s.price,m.duration,m.age_rating FROM showtimes s JOIN movies m ON m.id=s.movie_id WHERE s.title='Legacy active test'");
+  assert.ok(migrated.movie_id);assert.equal(Number(migrated.price),123456);assert.equal(migrated.duration,null);assert.equal(migrated.age_rating,null);
+  assert.equal((await one("SELECT COUNT(*) AS n FROM movies WHERE title='Legacy active test'")).n,1);
+  assert.equal((await one("SELECT COUNT(*) AS n FROM movies WHERE title='Legacy deleted test'")).n,0);
   for(const [name,role] of [['admin','admin'],['customer','customer']])await db.execute('INSERT INTO users(username,display_name,password_hash,role) VALUES(?,?,?,?)',[name,name,await passwordHash(password),role]);
   for(let attempt=0;attempt<20;attempt++){try{if((await fetch('http://127.0.0.1:3000/health')).ok)break;}catch{}await pause(250);}
   const admin=new Client(),customer=new Client();await admin.login('admin');await customer.login('customer');
   const cin=async name=>{await admin.save('/admin/cinemas/save',{name,address:'Địa chỉ kiểm thử',hotline:'000',image:''});return (await one('SELECT id FROM cinemas WHERE name=?',[name])).id;};
   const ca=await cin('Test A'),cb=await cin('Test B');
-  await admin.save('/admin/movies/save',{title:'Phim kiểm thử',director:'Kiểm thử',actors:'',duration:'90',language:'Tiếng Việt',genre:'Kiểm thử',country:'',synopsis:'Nội dung kiểm thử',trailer:'',poster:'',banner:'',age_rating:'P',status:'showing'});const movie=(await one('SELECT id FROM movies LIMIT 1')).id;
+  await admin.save('/admin/movies/save',{title:'Phim kiểm thử',director:'Kiểm thử',actors:'',duration:'90',language:'Tiếng Việt',genre:'Kiểm thử',country:'',synopsis:'Nội dung kiểm thử',trailer:'',poster:'',banner:'',age_rating:'P',status:'showing'});const movie=(await one('SELECT id FROM movies WHERE title=?',['Phim kiểm thử'])).id;
   await admin.save('/admin/movies/'+movie+'/hide',{});assert.equal((await new Client().request('/movies/'+movie)).code,404);await admin.save('/admin/movies/'+movie+'/hide',{});
   await admin.save('/admin/movies/save',{id:movie,title:'Phim kiểm thử đã sửa',director:'Kiểm thử',actors:'',duration:90,language:'Tiếng Việt',genre:'Kiểm thử',country:'',synopsis:'Đã sửa',trailer:'',poster:'',banner:'',age_rating:'T13',status:'showing'});
   assert.equal((await one('SELECT title FROM movies WHERE id=?',[movie])).title,'Phim kiểm thử đã sửa');

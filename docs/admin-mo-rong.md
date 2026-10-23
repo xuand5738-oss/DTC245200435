@@ -44,6 +44,8 @@ bash scripts/apply-cinema.sh
 
 Script lưu bản sao DB đầu tiên ở tmp/before-cinema-extension.sql, áp dụng migration idempotent 04-cinema.sql, build app, kiểm tra Nginx và reload. Không chạy down -v. Database mới được MySQL chạy 01–04 theo thứ tự; tạo tài khoản web bằng apply-auth.sh như hướng dẫn trước. Volume uploads là vùng ghi ảnh riêng, root filesystem app vẫn chỉ đọc, app vẫn USER node.
 
+Bổ sung migration 05-link-legacy-movies.sql: liên kết các suất chiếu cũ đang hiệu lực với bản ghi phim có cùng tên nguồn. Giờ, giá, ghế và vé giữ nguyên; thời lượng và nhãn độ tuổi chưa có để NULL, không tự đặt 90 phút/P. Suất đã xóa/hủy không được tạo lại thành phim. Chạy lại không sinh phim trùng. Trang chi tiết phim dùng LEFT JOIN để lịch cũ chưa gắn phòng vẫn hiện; cần điền metadata thật và tạo phòng trước khi lên lịch mới. apply-cinema.sh chạy cả 04 và 05; database mới chạy 01–05.
+
 ## Kiểm thử đã thực hiện
 
 ```bash
