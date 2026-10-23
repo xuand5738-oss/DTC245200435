@@ -87,6 +87,11 @@ class Client{
   await customer.save('/bookings',{showtime_id:sa,seat_id:a2.id,customer_name:'Test'},409);
   await customer.save('/bookings/'+bid+'/pay',{});await customer.save('/bookings/'+bid+'/pay',{});assert.equal((await one('SELECT points FROM users WHERE username="customer"')).points,9);
   assert.ok((await admin.request('/admin/showtimes/'+sa+'/seats')).body.includes('monitor-seat paid'));
+  const purchaseReport=(await admin.request('/admin/reports')).body;
+  assert.ok(purchaseReport.includes('Chi tiết vé tạo nên doanh thu'));
+  assert.ok(purchaseReport.includes('Combo kiểm thử × 1'));
+  assert.ok(purchaseReport.includes('href="/bookings/'+bid+'"'));
+  assert.ok(purchaseReport.includes('href="/admin/showtimes/'+sa+'/seats">A2</a>'));
   assert.equal((await customer.request('/bookings/'+bid+'/qr.svg')).code,200);
   await staffb.save('/admin/checkin',{token:b.checkin_token},403);await staff.save('/admin/checkin',{token:b.checkin_token},200);await staff.save('/admin/checkin',{token:b.checkin_token},409);
   const r2=await customer.save('/bookings',{showtime_id:sa2,seat_id:a1.id,customer_name:'Test',phone:'0123456789'});const bid2=Number(r2.location.split('/').pop());await customer.save('/bookings/'+bid2+'/pay',{});
@@ -108,6 +113,15 @@ class Client{
   const paymentCsv=(await admin.request('/admin/reports.csv?basis=payment')).body;
   assert.ok(paymentCsv.includes('Nhóm theo ngày thanh toán'));assert.ok(paymentCsv.includes(',"","",'),'Payment report must not mix showtime capacity into payment cohorts');
   assert.equal((await admin.request('/admin/reports?basis=invalid')).code,400);
+  const detailCsv=(await admin.request('/admin/reports.csv?detail=1')).body;
+  assert.ok(detailCsv.includes('Người đặt'));assert.ok(detailCsv.includes('Tài khoản'));assert.ok(detailCsv.includes('Ghế'));
+  const csvRows=detailCsv.trim().split(/\r?\n/).slice(1).map(line=>line.slice(1,-1).split('","'));
+  const totals=(await admin.request('/admin/reports.csv')).body.trim().split(/\r?\n/).slice(1).map(line=>line.slice(1,-1).split('","'));
+  assert.equal(csvRows.reduce((sum,r)=>sum+Number(r[14]),0),totals.reduce((sum,r)=>sum+Number(r[6]),0),'Detail amounts must reconcile with summary');
+  assert.equal(csvRows.length,totals.reduce((sum,r)=>sum+Number(r[1]),0));
+  assert.ok(!csvRows.some(r=>Number(r[0])===bid2),'Cancelled booking excluded from revenue details');
+  assert.equal((await customer.request('/admin/reports.csv?detail=1')).code,403);
+  assert.ok(!(await manager.request('/admin/reports.csv?detail=1')).body.includes('Test B'));
   const uid=(await one('SELECT id FROM users WHERE username="customer"')).id;await admin.save('/admin/users/'+uid+'/lock',{});assert.equal((await customer.request('/my-bookings')).code,303);await admin.save('/admin/users/'+uid+'/lock',{});
   const sb=(await one('SELECT id FROM showtimes WHERE hall_id=?',[hb])).id;
   await manager.save('/admin/showtimes/'+sb+'/delete',{},403);

@@ -57,6 +57,8 @@ Script tạo database topic11_test_<chuỗi ngẫu nhiên> và app-test không c
 Các kiểm tra cũ verify-auth.py, verify-stack.py, verify-ui.py và verify-hardening.js vẫn được giữ. Không có thao tác tự chụp ảnh; sinh viên chủ động mở các màn hình quản trị để xem/chụp. Phần báo cáo môn học tiếp tục nằm ngoài phạm vi làm tiếp theo lựa chọn trước của sinh viên.
 # Luồng quản trị liên thông
 
+Báo cáo có bảng **Chi tiết vé tạo nên doanh thu** bên dưới bảng tổng hợp: tên người đặt/tài khoản, liên hệ, phim, giờ chiếu, rạp/phòng, ghế, bắp nước theo dữ liệu đã lưu lúc đặt, giảm giá, tổng tiền và ngày thanh toán. Bảng chi tiết và CSV chi tiết dùng cùng bộ lọc, điều kiện vé còn hiệu lực đã thanh toán và phạm vi rạp như báo cáo tổng hợp. Admin mở được chi tiết vé; admin/quản lý rạp mở được sơ đồ ghế theo quyền. Vé chờ thanh toán hoặc đã hủy không tính vào doanh thu, tra cứu trong Giao dịch.
+
 Trong **Suất chiếu**, chọn **Theo dõi ghế** để xem trạng thái theo từng suất: còn trống, chờ thanh toán, đã thanh toán và ngừng bán. Admin có thể mở vé từ ô ghế; quản lý rạp chỉ xem suất thuộc rạp được phân công. Trang này chỉ đọc, không có thao tác đặt vé/thanh toán/chỉnh sơ đồ. Lịch không mở bán vẫn xem được để quản lý lịch sử. Truy cập `/showtimes/:id` bằng admin/quản lý được chuyển sang `/admin/showtimes/:id/seats`. Tải lại trang để lấy trạng thái mới từ MySQL.
 
 ## Bộ dữ liệu giả lập bổ sung theo yêu cầu
