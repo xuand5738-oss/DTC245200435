@@ -85,18 +85,31 @@ Grafana được provision datasource và dashboard từ file Git. Dashboard `De
 
 ## 8. Log tập trung với Loki và Promtail
 
-[Bổ sung luồng thu thập log, 3 truy vấn LogQL theo nhãn thực tế, ý nghĩa và kết quả từng truy vấn.]
+Nginx ghi request thành JSON vào volume nginx_logs, file booking-access.log. Promtail gắn volume chỉ đọc, thêm nhãn project=topic11 và job=nginx, đọc status/method từ JSON rồi gửi Loki. Loki lưu log trong volume riêng; Grafana dùng datasource Loki để truy vấn. Không gắn Docker socket cho Promtail. File cấu hình nằm trong thư mục logging.
+
+Ba query đã trả kết quả: `{project="topic11",job="nginx"}` (log tổng); `{project="topic11",job="nginx",status="200"}` (truy cập thành công); `{project="topic11",job="nginx"} | json | status = 404` (trang không tồn tại). Mở Grafana Explore, chọn Loki, Last 15 minutes; chụp từng query và log kết quả. Xem hướng dẫn trong docs/logql.md. Nếu log cũ ngoài khoảng chọn, truy cập lại trang chủ và /trang-khong-ton-tai để sinh log mới.
 
 ## 9. Hardening hệ thống
 
-[Ghi ít nhất 4 biện pháp đã áp dụng: vị trí cấu hình, mục đích và cách kiểm chứng. Không chỉ liệt kê tên.]
+1. Container app chạy USER node trong Dockerfile; kiểm tra UID thực tế là 1000, giảm quyền của tiến trình.
+2. App có read_only=true, cap_drop ALL và no-new-privileges. Docker inspect xác nhận cả ba; giảm khả năng ghi filesystem và tăng quyền.
+3. MySQL nằm ở backend internal, không publish cổng; app không publish cổng. Prometheus không nối backend, chỉ exporter DB nối hai mạng. Các giao diện quản trị chỉ bind 127.0.0.1.
+4. Mật khẩu riêng được sinh ngẫu nhiên, giữ trong .env và bị .gitignore loại bỏ; .env.example không chứa bí mật thật. Không dùng tài khoản root để ứng dụng kết nối DB.
+5. Tài khoản ứng dụng chỉ SELECT, INSERT, UPDATE trên ticket_booking; không GRANT OPTION. Script verify-hardening.js xác nhận CREATE TABLE bị từ chối. Exporter chỉ có quyền giám sát riêng, không quyền sửa dữ liệu nghiệp vụ.
+6. Security headers ở Nginx và giới hạn body; ứng dụng dùng SQL tham số và escape HTML. Các header được xác nhận qua HTTP thực tế.
+
+Các cấu hình này dành cho bài thực hành. Chưa có đăng nhập/phân quyền người dùng ở website, chưa HTTPS, chưa audit image; không coi đây là cấu hình sẵn sàng công khai Internet. cAdvisor cần privileged và mount hệ thống chỉ đọc để lấy metrics trong WSL, là ngoại lệ có đặc quyền cao của bộ giám sát, không phải hardening cho mọi container.
 
 ## 10. Kiểm tra tổng thể và demo
 
 **Sự cố môi trường đã gặp:** website trong WSL trả HTTP 200, nhưng sau khi phiên WSL kết thúc thì Windows không kết nối được; container bị dừng và khởi động lại ở lần gọi WSL tiếp theo. Giữ phiên Ubuntu tương tác mở bằng `start-wsl.ps1` giúp Windows truy cập lại cả website và phpMyAdmin với HTTP 200. Không thay đổi dữ liệu DB để xử lý sự cố này.
 
-[Bổ sung kết quả Docker Compose, kịch bản đặt vé, đối chiếu DB, metrics, log và bảo mật. Ghi lỗi gặp phải và cách xử lý thực tế.]
+Hệ thống gồm 11 dịch vụ Compose. Script verify-stack.py xác nhận website qua Nginx, kết nối DB, phpMyAdmin HTTP 200, bốn security headers, bốn target UP, metrics Nginx/MySQL/container, dashboard tám panel và ba LogQL có dữ liệu. Script demo.js kiểm chứng vé demo và chống đặt lại ghế; verify-hardening.js kiểm tra UID và quyền DB.
+
+Sự cố log: access.log mặc định của image Nginx là symlink tới stdout; Promtail không đọc được như file thường. Đã chuyển sang booking-access.log và glob booking-*.log. Sau khi Promtail gửi lô đầu, ba query trả lần lượt log tổng, log thành công và log 404. Không cần thêm dữ liệu nghiệp vụ để tạo log kiểm tra.
 
 ## 11. Kết quả và tài liệu tham khảo
 
-[Đối chiếu các tiêu chí với bằng chứng; ghi phần còn hạn chế. Tài liệu tham khảo chỉ gồm tài liệu học phần đã cung cấp, trừ khi sinh viên cho phép bổ sung.]
+Đã kiểm chứng các nhóm kỹ thuật của đề: ứng dụng/DB, Nginx, giám sát, log và hardening. Mã nguồn và cấu hình được push theo từng mốc. Sinh viên cần tự chụp minh chứng, điền bìa và trình bày demo; các mục này không thể được coi là hoàn thành chỉ bằng kiểm tra tự động.
+
+Tài liệu tham khảo: De_Tai_Thuc_Hanh - TKQT HTPM K23.pdf (trang 1–2 và đề 11); chapter01–chapter09 và slide tương ứng; các bài lab 1–8 đã cung cấp. Dữ liệu demo giả định được sinh viên cho phép. Không sử dụng nội dung tham khảo ngoài danh sách học phần để viết báo cáo.

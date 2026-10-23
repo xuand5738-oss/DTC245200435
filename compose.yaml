@@ -63,6 +63,25 @@ services:
         condition: service_healthy
     security_opt: ["no-new-privileges:true"]
     restart: unless-stopped
+  loki:
+    image: grafana/loki:3.5.0
+    command: ["-config.file=/etc/loki/config.yml"]
+    volumes:
+      - ./logging/loki.yml:/etc/loki/config.yml:ro
+      - loki_data:/loki
+    ports: ["127.0.0.1:8310:3100"]
+    networks: [monitor]
+    restart: unless-stopped
+  promtail:
+    image: grafana/promtail:3.5.0
+    command: ["-config.file=/etc/promtail/config.yml"]
+    volumes:
+      - ./logging/promtail.yml:/etc/promtail/config.yml:ro
+      - nginx_logs:/logs:ro
+      - promtail_positions:/positions
+    networks: [monitor]
+    depends_on: [loki, nginx]
+    restart: unless-stopped
   prometheus:
     image: prom/prometheus:v3.5.0
     volumes:
@@ -123,4 +142,6 @@ volumes:
   nginx_logs:
   prometheus_data:
   grafana_data:
+  loki_data:
+  promtail_positions:
 
