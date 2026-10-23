@@ -94,6 +94,13 @@ class Client{
   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/s1sAAAAASUVORK5CYII=','base64');
   const uploaded=await fetch('http://127.0.0.1:3000/admin/upload',{method:'POST',headers:{Cookie:Object.entries(admin.cookies).map(([k,v])=>k+'='+v).join('; '),'X-CSRF-Token':admin.cookies.booking_csrf,'Content-Type':'image/png'},body:png});assert.equal(uploaded.status,200);const image=await uploaded.json();assert.match(image.path,/^\/uploads\/[a-f0-9]{32}\.png$/);assert.equal((await new Client().request(image.path)).code,200);
   const report=await manager.request('/admin/reports?group=cinema');assert.equal(report.code,200);assert.ok(!report.body.includes('Test B'));assert.equal((await admin.request('/admin/reports.csv')).code,200);
+  const paymentFuture=await admin.request('/admin/reports.csv?basis=payment&from=2030-06-10&to=2030-06-10');
+  assert.equal(paymentFuture.body.trim().split(/\r?\n/).length,1,'Future showtime must not move current payment revenue into 2030');
+  const showtimeFuture=await admin.request('/admin/reports.csv?basis=showtime&from=2030-06-10&to=2030-06-10');
+  assert.ok(showtimeFuture.body.includes('2030-06-10'));assert.ok(showtimeFuture.body.includes('Tổng lượt ghế'));
+  const paymentCsv=(await admin.request('/admin/reports.csv?basis=payment')).body;
+  assert.ok(paymentCsv.includes('Nhóm theo ngày thanh toán'));assert.ok(paymentCsv.includes(',"","",'),'Payment report must not mix showtime capacity into payment cohorts');
+  assert.equal((await admin.request('/admin/reports?basis=invalid')).code,400);
   const uid=(await one('SELECT id FROM users WHERE username="customer"')).id;await admin.save('/admin/users/'+uid+'/lock',{});assert.equal((await customer.request('/my-bookings')).code,303);await admin.save('/admin/users/'+uid+'/lock',{});
   const sb=(await one('SELECT id FROM showtimes WHERE hall_id=?',[hb])).id;
   await manager.save('/admin/showtimes/'+sb+'/delete',{},403);
