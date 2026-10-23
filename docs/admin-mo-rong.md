@@ -68,7 +68,7 @@ Menu “Vé của tôi” và “Thành viên” chỉ dành cho khách hàng. A
 
 Chỉ vai trò `customer` được tạo vé, xác nhận thanh toán giả lập, sử dụng trang vé cá nhân và đổi quà. Admin/nhân sự xem suất chiếu ở chế độ thông tin, không có form đặt vé. Máy chủ trả 403 nếu tài khoản nhân sự gửi trực tiếp yêu cầu đặt/thanh toán hoặc dùng luồng yêu cầu đổi/hủy của khách hàng. Admin/CSKH xử lý đổi/hủy qua chức năng Giao dịch được phân quyền. Vé cũ do admin tạo trước khi sửa quyền vẫn giữ trong lịch sử, không tự động xóa hay thanh toán.
 
-- Tổng quan hiển thị các bước vận hành và số liệu cần xử lý từ MySQL: phim thiếu thời lượng/nhãn tuổi, phòng chưa có ghế, lịch cũ chưa gắn phòng, yêu cầu đổi/hủy chờ duyệt.
+- Tổng quan hiển thị số vé, số vé thanh toán và doanh thu giả lập từ MySQL. Hướng dẫn luồng vận hành nằm trong tài liệu, không hiển thị thành khối trên dashboard.
 - Trong **Phim**, bấm **Lịch chiếu** để xem lịch của phim và chọn sẵn phim cho lịch mới. **Xem trên website** mở thông tin khách hàng đang nhìn thấy.
 - Trong **Cụm rạp**, bấm **Phòng của rạp** để lọc phòng và chọn sẵn rạp khi tạo phòng. Trong phòng, mở **Sơ đồ ghế** hoặc **Lịch phòng**. Từ sơ đồ ghế có thể quay lại danh sách phòng hoặc lên lịch cho phòng đó.
 - Trong **Suất chiếu**, lọc theo phim/phòng; admin mở **Vé của suất** để tra cứu vé và yêu cầu đổi/hủy thuộc đúng suất. Bộ lọc suất được giữ khi tìm mã vé, điện thoại hoặc email.
