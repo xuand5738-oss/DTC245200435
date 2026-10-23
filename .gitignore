@@ -1,0 +1,5 @@
+tmp/
+.env
+node_modules/
+*.key
+*.tar.gz
