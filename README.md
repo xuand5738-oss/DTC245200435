@@ -6,11 +6,11 @@ Môn học: Triển khai và Quản trị Hệ thống Phần mềm.
 
 Website quản lý suất chiếu, ghế và đặt vé, thanh toán giả lập. Stack dự kiến: Express, MySQL, phpMyAdmin, Nginx, Prometheus, Grafana, Loki và Promtail. Tất cả dịch vụ chạy bằng Docker Compose trên WSL theo lựa chọn của sinh viên.
 
-Chỉ sử dụng tài liệu học phần đã cung cấp. Dữ liệu phim/sự kiện, suất chiếu và ghế do sinh viên cung cấp; chưa thêm dữ liệu mẫu. Không tích hợp thanh toán thật.
+Chỉ sử dụng tài liệu học phần đã cung cấp. Sinh viên đã cho phép tạo demo: 1 suất chiếu giả định, 8 ghế và 1 vé thanh toán giả lập. Không tích hợp thanh toán thật.
 
 ## Trạng thái
 
-Đã lập phạm vi, khung báo cáo và mã nguồn ứng dụng Express + MySQL + phpMyAdmin. Chưa có dữ liệu nghiệp vụ. Các thành phần Nginx, giám sát và log sẽ được bổ sung ở những nhiệm vụ tiếp theo.
+Đã chạy ứng dụng Express + MySQL + phpMyAdmin, kiểm chứng đặt vé demo, chống trùng ghế, thanh toán giả lập và đăng nhập phpMyAdmin. Các thành phần Nginx, giám sát và log sẽ được bổ sung ở những nhiệm vụ tiếp theo.
 
 ## Chạy ứng dụng trong Ubuntu WSL
 
@@ -38,7 +38,13 @@ Môi trường hiện tại đã có `.env` sinh mật khẩu ngẫu nhiên và 
 - MySQL không công bố cổng ra Windows. Dữ liệu nằm trong volume `topic11_mysql_data`, độc lập với hệ thống cũ.
 - Dừng bằng `docker compose stop`; chạy lại bằng `docker compose up -d`. Không dùng `docker compose down -v` vì sẽ xóa dữ liệu.
 
-Trang ban đầu hiện thông báo chưa có suất chiếu là đúng thiết kế khi chưa được cung cấp dữ liệu. Xem `docs/du-lieu-can-cung-cap.md`.
+Database mới khởi tạo chưa có dữ liệu. Để tạo lại demo đã được cho phép trên môi trường hiện tại:
+
+```bash
+docker compose exec -T app node < scripts/demo.js
+```
+
+Script tạo suất chiếu và ghế còn thiếu, đặt vé A1 nếu chưa có và xác nhận thanh toán giả lập. Chạy lại không tạo thêm vé A1. Script dừng nếu ghế này thuộc người đặt khác. Dữ liệu demo là giả định, không lấy từ nguồn ngoài. Xem `docs/du-lieu-can-cung-cap.md`.
 
 Kiểm tra môi trường từ PowerShell:
 

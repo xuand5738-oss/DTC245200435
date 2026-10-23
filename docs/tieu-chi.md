@@ -5,7 +5,7 @@ Nguồn: De_Tai_Thuc_Hanh - TKQT HTPM K23.pdf, trang 1–2 và đề 11 trang 4.
 | Tiêu chí | Điểm | Bằng chứng cần có | Trạng thái |
 |---|---:|---|---|
 | GitHub | 1,5 | Source, cấu hình, README hướng dẫn chạy, 3 commit có ý nghĩa theo các mốc | Đang làm |
-| Ứng dụng và DB | 1,5 | Website đặt vé hoạt động, kết nối MySQL, phpMyAdmin hoạt động | Đã chạy 3 dịch vụ; chờ dữ liệu và kiểm chứng đặt vé/thanh toán |
+| Ứng dụng và DB | 1,5 | Website đặt vé hoạt động, kết nối MySQL, phpMyAdmin hoạt động | Đã kiểm chứng bằng demo: đặt vé, trùng ghế 409, thanh toán, đối chiếu DB, đăng nhập phpMyAdmin; chờ sinh viên chụp minh chứng |
 | Nginx | 1,5 | Website qua reverse proxy, HTTPS tự ký hoặc security headers; commit riêng | Chưa làm |
 | Prometheus và Grafana | 1,5 | Metrics và dashboard container, web server, DB; commit riêng | Chưa làm |
 | Loki và Promtail | 1,5 | Log tập trung và 3 truy vấn LogQL có kết quả; commit riêng | Chưa làm |
@@ -18,7 +18,7 @@ Báo cáo bắt buộc tối thiểu 10 trang, có bìa thông tin sinh viên v�
 
 1. Phạm vi, tiêu chí và khung báo cáo — đã hoàn thành.
 2. Kiểm tra WSL và Docker; ghi hướng dẫn môi trường thực tế — đã xác nhận WSL 2, Ubuntu 24.04.5, Docker Engine và Compose hoạt động; sinh viên chưa chụp ảnh minh chứng.
-3. Ứng dụng, MySQL và phpMyAdmin — đã triển khai khung chạy được; chưa hoàn thành kiểm chứng nghiệp vụ vì chờ dữ liệu từ sinh viên.
+3. Ứng dụng, MySQL và phpMyAdmin — đã hoàn thành kiểm tra kỹ thuật bằng dữ liệu demo được sinh viên cho phép. Chưa có ảnh do sinh viên tự chụp.
 4. Nginx reverse proxy và HTTPS/security headers.
 5. Prometheus, exporter và Grafana cho đủ ba tầng giám sát.
 6. Loki, Promtail và 3 truy vấn LogQL.

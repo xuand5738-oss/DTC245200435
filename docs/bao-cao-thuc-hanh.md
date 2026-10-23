@@ -13,7 +13,7 @@
 
 Đề tài triển khai website đặt vé xem phim hoặc sự kiện, quản lý suất chiếu và ghế, với thanh toán giả lập. Ứng dụng sử dụng MySQL và công cụ quản trị phpMyAdmin. Hệ thống bổ sung Nginx reverse proxy, giám sát Prometheus/Grafana, log tập trung Loki/Promtail và các biện pháp bảo mật. Các dịch vụ được khai báo bằng Docker Compose.
 
-Dữ liệu nghiệp vụ do sinh viên cung cấp. Môi trường thực hành được chọn là WSL trên Windows thay cho máy ảo VMware trong bài lab.
+Dữ liệu demo giả định được tạo sau khi sinh viên cho phép: một suất chiếu, tám ghế và một lượt đặt vé thử. Môi trường thực hành được chọn là WSL trên Windows thay cho máy ảo VMware trong bài lab.
 
 ## 2. Chuẩn bị môi trường
 
@@ -55,17 +55,17 @@ Trong terminal Ubuntu, vào `/mnt/d/DTC245200435`, chạy `docker compose up -d 
 
 Người dùng chọn suất chiếu, ghế và nhập họ tên. Ứng dụng ghi một booking ở trạng thái `pending`. Nút xác nhận thanh toán giả lập đổi trạng thái thành `simulated_paid`, không kết nối ngân hàng và không thu tiền thật. Câu SQL nhận đầu vào dùng tham số, nội dung hiển thị được escape HTML.
 
-**Chưa kiểm chứng luồng đặt vé thành công:** đang chờ dữ liệu phim, suất chiếu, ghế và giá vé từ sinh viên. Không thêm dữ liệu mẫu.
+**Đã kiểm chứng:** suất chiếu demo “Hành trình khám phá” lúc 19:30 ngày 25/10/2026, giá 75.000 VND; tám ghế A1–A4, B1–B4. Khách Demo đặt A1 thành công, thanh toán giả lập và kiểm tra bản ghi trong DB. Dữ liệu giả định được sinh viên cho phép, không lấy từ nguồn bên ngoài.
 
 ### 5.4. Ảnh sinh viên tự chụp
 
-1. Website `http://localhost:8280` ở trạng thái chờ dữ liệu — chỉ minh chứng ứng dụng truy cập được.
+1. Website `http://localhost:8280` hiển thị suất chiếu, giờ và giá vé; trang `/showtimes/1` hiển thị A1 đã đặt và các ghế còn lại có thể chọn.
 2. Sau khi tự đăng nhập phpMyAdmin tại `http://localhost:8281`, mở database `ticket_booking` để chụp ba bảng. Không để mật khẩu xuất hiện.
-3. Sau khi sinh viên cung cấp dữ liệu: chụp chọn ghế, thông tin vé, thanh toán giả lập và bản ghi tương ứng trong DB. Chưa thể chụp phần này hiện tại.
+3. Trang `http://localhost:8280/bookings/1` hiển thị vé A1 đã thanh toán giả lập. Trong phpMyAdmin mở bảng bookings, đối chiếu id 1, showtime_id 1, seat_id trỏ tới A1 và payment_status `simulated_paid`. Đây là ảnh sinh viên tự chụp.
 
 ### 5.5. Kết quả đã kiểm tra
 
-Docker Compose khởi động đủ app, db và phpmyadmin. Endpoint `/health` trả `status: ok` và `database: connected`. Website và phpMyAdmin trả HTTP 200. Yêu cầu đặt vé thiếu thông tin bị từ chối với HTTP 400; mã suất chiếu không tồn tại trả HTTP 404. Ba bảng showtimes, seats và bookings đều có 0 bản ghi, đúng yêu cầu chưa thêm dữ liệu. Chưa kiểm tra đặt vé thành công, tranh chấp ghế và thanh toán giả lập trên dữ liệu thật.
+Docker Compose khởi động đủ app, db và phpmyadmin. Endpoint `/health` trả `status: ok` và `database: connected`. Website và phpMyAdmin trả HTTP 200. Yêu cầu đặt vé thiếu thông tin bị từ chối với HTTP 400; mã suất chiếu không tồn tại trả HTTP 404. Sau khi được phép tạo demo, script `scripts/demo.js` xác nhận đặt vé trả 303, yêu cầu đặt trùng ghế trả 409 và chỉ có một booking cho A1 trong suất này. Thanh toán trả 303; trạng thái DB là `simulated_paid` và trang vé hiển thị đúng. Đăng nhập phpMyAdmin bằng tài khoản ứng dụng thành công, xem được ba bảng. Chưa kiểm thử tải hay tranh chấp đồng thời; phép thử trùng ghế hiện gửi tuần tự.
 
 Express 4.22.3 và mysql2 3.24.6 được khóa bằng package-lock.json; npm audit khi build không báo lỗ hổng tại thời điểm kiểm tra. Đây chỉ là kiểm tra thư viện npm, chưa phải quét image hay đánh giá toàn bộ bảo mật.
 
