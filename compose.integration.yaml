@@ -1,0 +1,14 @@
+services:
+  app-test:
+    image: topic11-app
+    environment:
+      DB_HOST: db
+      DB_NAME: ${TEST_DB_NAME:?Run scripts/test-cinema.sh}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Asia/Ho_Chi_Minh
+    networks: [frontend, backend]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/app/uploads:uid=1000,gid=1000,mode=0700"]

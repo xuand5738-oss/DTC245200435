@@ -21,6 +21,8 @@ services:
     restart: unless-stopped
   app:
     build: ./app
+    volumes:
+      - uploads:/app/uploads
     environment:
       DB_HOST: db
       DB_NAME: ${MYSQL_DATABASE}
@@ -144,4 +146,5 @@ volumes:
   grafana_data:
   loki_data:
   promtail_positions:
+  uploads:
 

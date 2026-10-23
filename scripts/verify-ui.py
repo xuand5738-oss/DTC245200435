@@ -23,7 +23,7 @@ assert '@media(max-width:680px)' in css
 assert 'data-selected-seat' in js
 assert '<html lang="vi">' in home
 assert not re.search(r'(?:src|href)="https?://',home),'External assets are not permitted'
-admin=Browser();admin.login('admin','WEB_ADMIN_PASSWORD');overview=normalized(admin.get('/admin'))
+admin=Browser();admin.login('admin','WEB_ADMIN_PASSWORD');overview=normalized(admin.get('/admin/showtimes'))+normalized(admin.get('/admin/bookings'))
 customer=Browser();customer.login('khachhang','WEB_CUSTOMER_PASSWORD');mine=normalized(customer.get('/my-bookings'))
 for show in data['shows']:
     expected=[show['title'],show['formatted_time'],show['formatted_price']]
