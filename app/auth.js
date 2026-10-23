@@ -37,7 +37,10 @@ function installAuth(app, pool, route, page, esc) {
     }
     next();
   });
-  app.get('/login', (req,res)=>res.send(page('Đăng nhập',`<section><form method="post" action="/login"><input type="hidden" name="_csrf" value="${req.csrf}"><label>Tài khoản <input name="username" required maxlength="50" autocomplete="username"></label><label>Mật khẩu <input type="password" name="password" required maxlength="200" autocomplete="current-password"></label><button>Đăng nhập</button></form></section>`,req)));
+  app.get('/login', (req,res)=>{
+    if(req.user)return res.redirect(303,req.user.role==='admin'?'/admin':'/my-bookings');
+    res.send(page('Đăng nhập',`<div class="auth-layout"><aside class="auth-aside"><div><p class="eyebrow">CHÀO MỪNG ĐẾN VỚI VÉ 11</p><h2>Chỗ ngồi của bạn.<br>Khoảnh khắc của bạn.</h2><p>Đăng nhập để đặt vé, xem lại lịch chiếu và quản lý những trải nghiệm của mình.</p></div><span class="auth-decoration" aria-hidden="true">Ⅱ Ⅱ</span><p>Đặt vé xem phim / sự kiện<br>Thanh toán giả lập · Không thu tiền thật</p></aside><div class="auth-form"><p class="eyebrow">TÀI KHOẢN CỦA BẠN</p><h1>Đăng nhập</h1><p>Chào bạn trở lại. Tiếp tục hành trình của bạn tại đây.</p><form method="post" action="/login"><input type="hidden" name="_csrf" value="${req.csrf}"><label>Tài khoản<input name="username" required maxlength="50" autocomplete="username" placeholder="Nhập tên tài khoản" autocapitalize="none" spellcheck="false"></label><label>Mật khẩu<input type="password" name="password" required maxlength="200" autocomplete="current-password" placeholder="Nhập mật khẩu của bạn"></label><button class="button wide">Đăng nhập <span aria-hidden="true">→</span></button></form><p class="hint">Sử dụng tài khoản đã được cấp. Quyền truy cập được xác định theo vai trò của tài khoản.</p><a class="text-link" href="/">← Về trang khám phá</a></div></div>`,req));
+  });
   app.post('/login',route(async(req,res)=>{
     const username=String(req.body.username||'').trim();const password=String(req.body.password||'');
     if(username.length>50||password.length>200)return res.sendStatus(400);

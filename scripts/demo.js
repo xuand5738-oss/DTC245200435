@@ -33,7 +33,7 @@ const crypto = require('node:crypto');
   const paid=await request(base+'/bookings/'+booking.id+'/pay',{method:'POST',body:new URLSearchParams(),redirect:'manual'});assert.equal(paid.status,303);
   const [[after]]=await db.execute('SELECT payment_status FROM bookings WHERE id=?',[booking.id]);assert.equal(after.payment_status,'simulated_paid');
   const ticket=await request(base+'/bookings/'+booking.id);assert.ok((await ticket.text()).includes('Đã thanh toán giả lập'));
-  const seats=await request(base+'/showtimes/'+show.id);assert.ok((await seats.text()).includes('(Đã đặt)'));
+  const seats=await request(base+'/showtimes/'+show.id);assert.ok((await seats.text()).includes('Đã đặt'));
   const [[count]]=await db.execute('SELECT COUNT(*) AS total FROM bookings WHERE showtime_id=? AND seat_id=?',[show.id,seat.id]);assert.equal(Number(count.total),1);
   console.log(JSON.stringify({home:200,booking_id:booking.id,showtime_id:show.id,duplicate:409,payment:after.payment_status,bookings_for_A1:count.total,ticket_url:'http://localhost:8280/bookings/'+booking.id,showtime_url:'http://localhost:8280/showtimes/'+show.id},null,2));
   const [rows]=await db.execute('SELECT b.id,s.title,s.starts_at,t.label AS seat,b.customer_name,b.payment_status FROM bookings b JOIN showtimes s ON s.id=b.showtime_id JOIN seats t ON t.id=b.seat_id WHERE b.id=?',[booking.id]);console.log(JSON.stringify(rows,null,2));

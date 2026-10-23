@@ -3,6 +3,7 @@ Creates one customer demo booking on A2 if the customer has no bookings yet.
 """
 from pathlib import Path
 import urllib.request,urllib.error,urllib.parse,http.cookiejar,re
+from html.parser import HTMLParser
 env=dict(l.split('=',1) for l in Path('.env').read_text().splitlines() if '=' in l)
 base='http://127.0.0.1:8280'
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -46,9 +47,14 @@ match=re.search(r'href="/bookings/(\d+)"',html)
 if match: booking_id=match.group(1)
 else:
     code,_,show=customer.request('/showtimes/1');assert code==200
-    seat=re.search(r'name="seat_id" value="(\d+)" required> A2',show)
-    assert seat,'A2 is not free; do not change another booking'
-    code,headers,_=customer.request('/bookings',{'showtime_id':'1','seat_id':seat.group(1),'customer_name':'Khách Demo phân quyền','user_id':'1','_csrf':customer.csrf()})
+    class SeatParser(HTMLParser):
+        value=None
+        def handle_starttag(self,tag,attrs):
+            a=dict(attrs)
+            if tag=='input' and a.get('name')=='seat_id' and a.get('data-label')=='A2' and 'disabled' not in a: self.value=a['value']
+    seat=SeatParser();seat.feed(show)
+    assert seat.value,'A2 is not free; do not change another booking'
+    code,headers,_=customer.request('/bookings',{'showtime_id':'1','seat_id':seat.value,'customer_name':'Khách Demo phân quyền','user_id':'1','_csrf':customer.csrf()})
     assert code==303
     booking_id=headers['Location'].split('/')[-1]
 assert customer.request('/bookings/'+booking_id)[0]==200

@@ -53,6 +53,8 @@ Script tạo suất chiếu và ghế còn thiếu, đặt vé A1 nếu chưa c�
 
 ## Đăng nhập và phân quyền website
 
+Giao diện các trang dùng chung phông chữ hỗ trợ tiếng Việt, định dạng ngày giờ Việt Nam/VND và tài nguyên nội bộ. Số ghế, vé và trạng thái lấy từ MySQL, không thêm dữ liệu mẫu trong lần đổi giao diện. Xem `docs/giao-dien.md` để kiểm tra đồng bộ dữ liệu và các màn hình.
+
 Mở http://localhost:8280/login. Tài khoản `admin` quản lý toàn bộ vé và thêm suất chiếu; `khachhang` chỉ xem/đặt/thanh toán giả lập vé của mình. Mật khẩu tương ứng ở WEB_ADMIN_PASSWORD và WEB_CUSTOMER_PASSWORD trong `.env`, khác tài khoản phpMyAdmin/Grafana. Triển khai lần đầu hoặc nâng cấp DB đã có bằng `bash scripts/apply-auth.sh` trong WSL. Xem `docs/phan-quyen.md`.
 
 Vé demo cũ chưa có chủ tài khoản chỉ admin xem được; vé demo A2 được tạo để kiểm tra khách hàng. Mọi quyền được kiểm tra ở server, không dựa vào việc ẩn nút trên giao diện. Đăng nhập bằng username/password, mật khẩu băm scrypt, phiên lưu DB, cookie HttpOnly/SameSite và token CSRF.
