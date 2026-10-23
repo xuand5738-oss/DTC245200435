@@ -57,6 +57,15 @@ Script tạo database topic11_test_<chuỗi ngẫu nhiên> và app-test không c
 Các kiểm tra cũ verify-auth.py, verify-stack.py, verify-ui.py và verify-hardening.js vẫn được giữ. Không có thao tác tự chụp ảnh; sinh viên chủ động mở các màn hình quản trị để xem/chụp. Phần báo cáo môn học tiếp tục nằm ngoài phạm vi làm tiếp theo lựa chọn trước của sinh viên.
 # Luồng quản trị liên thông
 
+## Bộ dữ liệu giả lập bổ sung theo yêu cầu
+
+Chạy thủ công trong WSL: `docker compose exec -T app node < scripts/seed-cinema-demo.js`.
+Script thêm 3 phim hư cấu (2 đang chiếu, 1 sắp chiếu), 1 rạp, 2 phòng với 48 ghế, 4 suất vào ngày kế tiếp lúc chạy lần đầu, 3 sản phẩm bắp nước, mã VE11DEMO, 1 hạng thành viên, 1 quà đổi điểm và 2 nội dung trang chủ. Không thêm vé hay giao dịch thanh toán. Mã giảm giá có thời hạn cụ thể, xem trong quản trị để chỉnh khi cần.
+
+Script ghi dấu `demo_catalog_v1` trong cấu hình và không thêm lại khi chạy lần nữa, kể cả khi người dùng đã sửa hoặc xóa dữ liệu demo. Không chạy tự động khi khởi động ứng dụng. Không sửa lịch, ghế hoặc vé đã có. Phim không có poster/trailer bên ngoài; các trường này để người quản trị cập nhật bằng nội dung được phép.
+
+Menu “Vé của tôi” và “Thành viên” chỉ dành cho khách hàng. Admin/CSKH có liên kết “Giao dịch”; chi tiết vé dẫn trở lại danh sách giao dịch khi truy cập bằng vai trò quản trị.
+
 - Tổng quan hiển thị các bước vận hành và số liệu cần xử lý từ MySQL: phim thiếu thời lượng/nhãn tuổi, phòng chưa có ghế, lịch cũ chưa gắn phòng, yêu cầu đổi/hủy chờ duyệt.
 - Trong **Phim**, bấm **Lịch chiếu** để xem lịch của phim và chọn sẵn phim cho lịch mới. **Xem trên website** mở thông tin khách hàng đang nhìn thấy.
 - Trong **Cụm rạp**, bấm **Phòng của rạp** để lọc phòng và chọn sẵn rạp khi tạo phòng. Trong phòng, mở **Sơ đồ ghế** hoặc **Lịch phòng**. Từ sơ đồ ghế có thể quay lại danh sách phòng hoặc lên lịch cho phòng đó.
