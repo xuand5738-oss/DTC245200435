@@ -59,6 +59,8 @@ powershell -ExecutionPolicy Bypass -File .\start-wsl.ps1
 
 Giữ phiên Ubuntu này mở khi sử dụng website. Trên máy thực hành, WSL có thể dừng sau khi phiên cuối kết thúc; `docker compose up -d` không thay thế việc giữ phiên WSL hoạt động. Script trên chỉ khởi động stack và mở Bash, không tạo demo.
 
+Script gọi `scripts/start-stack.sh` để chờ dịch vụ sẵn sàng (tối đa 120 giây), reload Nginx và kiểm tra `/health` trước khi in địa chỉ truy cập. Chờ thấy `"database":"connected"` rồi mở website. `docker compose ps` chỉ liệt kê trạng thái, không mở trang trình duyệt. Nếu có lỗi, cửa sổ Ubuntu vẫn được giữ để xem thông báo; không chạy `down -v` để khắc phục lỗi truy cập.
+
 Sau khi cập nhật mã nguồn, trong Ubuntu:
 
 ```bash
